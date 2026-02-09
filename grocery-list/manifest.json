@@ -1,0 +1,26 @@
+{
+  "name": "Tamil Grocery List",
+  "short_name": "Grocery",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#F5F7FA",
+  "theme_color": "#2E7D32",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+     {
+      "src": "assets/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

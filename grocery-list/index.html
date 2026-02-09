@@ -2,389 +2,222 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A5 Tamil Grocery List</title>
-    
-    <style>
-        /* --- General Site Styling (Screen View) --- */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f7f6;
-            color: #333;
-        }
-
-        .container {
-            max-width: 650px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            color: #4CAF50;
-            text-align: center;
-        }
-
-        #input-area {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        #item-name { flex-grow: 1; }
-        #item-quantity { width: 70px; }
-        #item-unit { width: 70px; }
-
-        #item-name, #item-quantity, #item-unit {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        
-        button {
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-
-        #add-button { background-color: #4CAF50; color: white; }
-        #add-button:hover { background-color: #45a049; }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        #print-button, #clear-button {
-            width: 100%;
-        }
-
-        #print-button { background-color: #007BFF; color: white; }
-        #print-button:hover { background-color: #0056b3; }
-
-        #clear-button { background-color: #f44336; color: white; }
-        #clear-button:hover { background-color: #d32f2f; }
-
-        /* --- Grocery List Display --- */
-        #grocery-list {
-            list-style: none;
-            padding: 0;
-            border-top: 2px solid #eee;
-            margin-top: 15px;
-        }
-
-        #grocery-list li {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px dashed #eee;
-            font-size: 1.1em;
-        }
-
-        .item-text { flex-grow: 1; }
-
-        .quantity-display {
-            display: flex;
-            align-items: center;
-            font-weight: bold;
-            min-width: 100px;
-            justify-content: flex-end;
-        }
-        
-        .actions { 
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .delete-button {
-            background: none;
-            color: #f44336;
-            font-size: 1.2em;
-            padding: 0 5px 0 15px;
-        }
-        .delete-button:hover { color: #d32f2f; }
-        
-        /* --- Edit Mode Styles --- */
-        .edit-button {
-            background-color: #ff9800;
-            color: white;
-            padding: 5px 10px;
-            font-size: 0.9em;
-        }
-        .edit-button:hover { background-color: #e68900; }
-
-        .save-button {
-            background-color: #2196F3;
-            color: white;
-            padding: 5px 10px;
-            font-size: 0.9em;
-        }
-        .save-button:hover { background-color: #0b7dda; }
-
-        #grocery-list li input.edit-name,
-        #grocery-list li input.edit-quantity,
-        #grocery-list li select.edit-unit {
-            padding: 5px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-right: 10px;
-            font-size: 1em;
-        }
-
-        #grocery-list li input.edit-name { flex-grow: 1; }
-        #grocery-list li input.edit-quantity { width: 60px; }
-        #grocery-list li select.edit-unit { width: 70px; }
-
-
-    /* Change flex direction on small screens */
-@media (max-width: 600px) {
-  .no-print {
-    flex-direction: column;   /* mobile */
-  }
-}
-
-        /* --- Print Media Query (A5 Formatting) --- */
-        @media print {
-            @page {
-                size: A5; /* 148mm x 210mm */
-                margin: 15mm;
-            }
-
-            .no-print, #input-area, h1 { display: none !important; }
-
-            body { background-color: white !important; margin: 0; padding: 0; color: #000; }
-            .container { max-width: 100%; box-shadow: none; padding: 0; margin: 0; }
-
-            #print-title {
-                display: block !important;
-                text-align: center;
-                color: #000;
-                margin-bottom: 20px;
-                font-size: 1.5em;
-                font-weight: bold;
-            }
-
-            #grocery-list {
-                font-size: 11pt;
-                border: 1px solid #000;
-                border-top: 3px solid #000;
-            }
-
-            #grocery-list li {
-                padding: 8px 5px;
-                border-bottom: 1px dashed #ccc;
-            }
-            
-            .quantity-display {
-                font-weight: bold;
-                min-width: 80px;
-                justify-content: flex-end;
-            }
-        }
-        
-        #print-title { display: none; }
-    </style>
-    
-    <script src="list_data.js"></script> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tamil Grocery List</title>
+    <meta name="theme-color" content="#2E7D32">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Icon for Apple devices -->
+    <link rel="apple-touch-icon" href="assets/icon.svg">
 </head>
-<body onload="loadPredefinedItems()">
+<body onload="">
 
-<div class="container">
-    <h1 class="no-print">🛒 மளிகைப் பட்டியல்</h1>
-    <div id="print-title">மளிகைப் பட்டியல் (A5)</div>
+    <!-- Header -->
+    <header class="no-print">
+        <h1>🛒 Grocery List</h1>
+        <!-- Settings/Menu button could go here for desktop -->
+    </header>
 
-    <div id="input-area" class="no-print">
-        <input type="text" id="item-name" placeholder="பொருள் பெயர்" required>
-        <input type="number" id="item-quantity" placeholder="அளவு" value="1" min="1">
-        <select id="item-unit">
-            <option value="nos">nos</option>
-            <option value="kg">kg</option>
-            <option value="L">L</option>
-            <option value="g">g</option>
-            <option value="ml">ml</option>
-            <option value="pack">pack</option>
-            <option value="jar">jar</option>
-            <option value="roll">roll</option>
-            <option value="bottle">bottle</option>
-        </select>
-        <button id="add-button" onclick="addItemFromInput()">சேர்க்க</button>
+    <div class="app-container">
+        
+        <!-- SECTION: DASHBOARD -->
+        <div id="home" class="section active">
+            <div style="margin-bottom: 24px;">
+                <h2 style="margin: 0; font-size: 1.8rem; font-weight: 800;">Welcome back! 👋</h2>
+                <p style="color: var(--text-secondary); margin: 4px 0 0 0; font-weight: 600;">Here's your grocery status.</p>
+            </div>
+
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <span id="stat-total" class="summary-value">0</span>
+                    <span class="summary-label">Total</span>
+                </div>
+                <div class="summary-card highlight">
+                    <span id="stat-pending" class="summary-value">0</span>
+                    <span class="summary-label">Pending</span>
+                </div>
+                <div class="summary-card">
+                    <span id="stat-purchased" class="summary-value" style="color: var(--primary-color)">0</span>
+                    <span class="summary-label">Bought</span>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700;">Items to Buy</h3>
+                <button onclick="UI.switchTab('list')" style="background:none; border:none; color:var(--primary-color); font-weight:700; cursor:pointer;">Edit List</button>
+            </div>
+            
+            <div id="dashboard-list-items" style="display:flex; flex-direction:column; gap:8px;">
+                <!-- Interactive mark-only items injected here -->
+            </div>
+        </div>
+
+        <!-- SECTION: LIST -->
+        <div id="list" class="section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                <h2 style="margin: 0; font-size: 1.5rem; font-weight: 800;">Your List</h2>
+                <button class="btn-icon" onclick="window.print()" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; color: var(--text-main); font-weight: 700; cursor: pointer;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                    Print
+                </button>
+            </div>
+            <div id="grocery-items-container">
+                <!-- Items injected here via JS -->
+            </div>
+            <div style="height: 80px;"></div> <!-- Spacer for FAB -->
+        </div>
+
+        <!-- SECTION: SETTINGS -->
+        <div id="settings" class="section">
+            <h2 style="margin-bottom: 24px; font-size: 1.5rem; font-weight: 800;">Settings</h2>
+            
+            <div class="card" style="display: block; padding: 20px;">
+                <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; font-weight: 700;">Appearance</h3>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <div>
+                        <span style="font-weight: 700; display: block;">Theme</span>
+                        <span style="font-size: 0.85rem; color: var(--text-secondary);">Choose your preferred look</span>
+                    </div>
+                    <button type="button" id="theme-selector-btn" class="form-control" style="width: 130px; padding: 10px; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                        <span id="selected-theme-text">System</span>
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ... existing data management card ... -->
+            <div class="card" style="display: block; padding: 20px;">
+                <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; font-weight: 700;">Data Management</h3>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">These actions are permanent and cannot be undone.</p>
+                
+                <button class="btn-block" style="background-color: var(--bg-color); color: var(--danger-color); border: 1px solid var(--border-color); box-shadow: none; font-size: 1rem;" onclick="Store.clearAll()">
+                    Clear All Grocery Data
+                </button>
+            </div>
+
+            <div style="text-align: center; margin-top: 32px; color: var(--text-secondary);">
+                <p style="font-size: 0.85rem; font-weight: 600;">Grocery App v1.2.0</p>
+                <p style="font-size: 0.75rem;">Professionally Redesigned</p>
+            </div>
+        </div>
+
     </div>
 
-    <ul id="grocery-list">
-        </ul>
-
-    <div class="action-buttons no-print">
-        <button id="print-button" onclick="window.print()">
-            பட்டியலை அச்சிடுக (A5 வடிவம்)
-        </button>
-        <button id="clear-button" onclick="clearAllItems()">
-            Clear All
-        </button>
+    <!-- Theme Selector Modal -->
+    <div id="theme-modal" class="modal-overlay" style="align-items: center; justify-content: center;">
+        <div class="modal-content" style="width: 90%; max-width: 350px; border-radius: var(--radius-lg); transform: scale(0.9); padding: 24px;">
+            <h3 style="margin: 0 0 20px 0; text-align: center; font-size: 1.3rem;">Select Theme</h3>
+            <div class="unit-grid" id="theme-grid" style="grid-template-columns: repeat(1, 1fr);">
+                <div class="unit-option" onclick="Theme.apply('light'); UI.closeThemeModal();" style="flex-direction: row; justify-content: flex-start; gap: 15px; padding: 18px;">
+                    <span class="emoji">☀️</span> <span>Light Mode</span>
+                </div>
+                <div class="unit-option" onclick="Theme.apply('dark'); UI.closeThemeModal();" style="flex-direction: row; justify-content: flex-start; gap: 15px; padding: 18px;">
+                    <span class="emoji">🌙</span> <span>Dark Mode</span>
+                </div>
+                <div class="unit-option" onclick="Theme.apply('system'); UI.closeThemeModal();" style="flex-direction: row; justify-content: flex-start; gap: 15px; padding: 18px;">
+                    <span class="emoji">💻</span> <span>System Default</span>
+                </div>
+            </div>
+            <button type="button" class="btn-block" style="margin-top: 20px; background: var(--bg-color); color: var(--text-main); box-shadow: none; padding: 12px;" onclick="UI.closeThemeModal()">Cancel</button>
+        </div>
     </div>
-</div>
 
-<script>
-    const nameInput = document.getElementById('item-name');
-    const quantityInput = document.getElementById('item-quantity');
-    const unitInput = document.getElementById('item-unit'); 
-    const list = document.getElementById('grocery-list');
+    <!-- FAB (Floating Action Button) -->
+    <button id="fab-add" class="fab no-print" aria-label="Add Item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    </button>
 
-    // --- Core function to add an item to the list ---
-    function createListItem(name, quantity, unit) {
-        const listItem = document.createElement('li');
-        // Store data in attributes for editing
-        listItem.setAttribute('data-name', name);
-        listItem.setAttribute('data-quantity', quantity);
-        listItem.setAttribute('data-unit', unit);
-        
-        // Initial Display HTML
-        listItem.innerHTML = `
-            <span class="item-text">${name}</span>
-            <span class="quantity-display">${quantity} ${unit}</span>
-            <div class="actions no-print">
-                <button class="edit-button" onclick="editItem(this)">Edit</button>
-                <button class="delete-button" onclick="removeItem(this)">✖</button>
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav no-print">
+        <button class="nav-item active" data-target="home">
+            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            Home
+        </button>
+        <button class="nav-item" data-target="list">
+            <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+            List
+        </button>
+        <button class="nav-item" data-target="settings">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            Settings
+        </button>
+    </nav>
+
+    <!-- Add Item Modal -->
+    <div id="add-modal" class="modal-overlay">
+        <div class="modal-content">
+            <!-- Mobile Handle Bar -->
+            <div style="width: 40px; height: 5px; background: var(--border-color); border-radius: 10px; margin: -10px auto 20px auto;"></div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+                <h2 id="modal-title" style="margin:0; font-size: 1.5rem; font-weight: 800;">Add Item</h2>
+                <button onclick="UI.closeModal()" style="background:var(--bg-color); border:none; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; color:var(--text-secondary); cursor:pointer;">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="3" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </div>
-        `;
 
-        list.appendChild(listItem);
-    }
-    
-    // --- Function to handle user input from the fields ---
-    function addItemFromInput() {
-        const name = nameInput.value.trim();
-        const quantity = quantityInput.value.trim();
-        const unit = unitInput.value;
+            <form id="add-form">
+                <!-- ... existing form fields ... -->
+                <div class="form-group">
+                    <label>What do you need?</label>
+                    <input type="text" id="input-name" class="form-control" placeholder="e.g. Fresh Milk" required>
+                </div>
+                <!-- ... category select already updated above ... -->
 
-        if (name === "") {
-            alert("Please enter an item name.");
-            return;
-        }
-        if (quantity === "" || parseFloat(quantity) <= 0) {
-            alert("Please enter a valid quantity.");
-            return;
-        }
-        
-        createListItem(name, quantity, unit);
+                <div class="form-group" id="cat-group-wrapper">
+                    <label>Category</label>
+                    <button type="button" id="category-selector-btn" class="form-control" style="text-align: left; background-color: var(--bg-color); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                        <span id="selected-category-text">General</span>
+                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    </button>
+                    <input type="hidden" id="input-category" value="General">
+                </div>
+                
+                <div style="display:flex; gap:16px;">
+                    <div class="form-group" style="flex: 1.2">
+                        <label>Quantity</label>
+                        <input type="number" id="input-qty" class="form-control" value="1" min="1">
+                    </div>
+                    <div class="form-group" style="flex: 1">
+                        <label>Unit</label>
+                        <button type="button" id="unit-selector-btn" class="form-control" style="text-align: left; background-color: var(--bg-color); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                            <span id="selected-unit-text">nos</span>
+                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        </button>
+                        <input type="hidden" id="input-unit" value="nos">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-block"><span id="submit-btn-text">Save to List</span></button>
+            </form>
+        </div>
+    </div>
 
-        // Clear inputs and set focus for next item
-        nameInput.value = '';
-        quantityInput.value = '1';
-        unitInput.value = 'nos'; 
-        nameInput.focus();
-    }
-
-    // --- Function to start editing an item ---
-    function editItem(button) {
-        const listItem = button.closest('li');
-        const currentName = listItem.getAttribute('data-name');
-        const currentQuantity = listItem.getAttribute('data-quantity');
-        const currentUnit = listItem.getAttribute('data-unit');
-
-        // Replace display spans with input fields for editing
-        listItem.innerHTML = `
-            <input type="text" class="edit-name" value="${currentName}">
-            <input type="number" class="edit-quantity" value="${currentQuantity}" min="0">
-            <select class="edit-unit">
-                <option value="nos" ${currentUnit === 'nos' ? 'selected' : ''}>nos</option>
-                <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
-                <option value="L" ${currentUnit === 'L' ? 'selected' : ''}>L</option>
-                <option value="g" ${currentUnit === 'g' ? 'selected' : ''}>g</option>
-                <option value="ml" ${currentUnit === 'ml' ? 'selected' : ''}>ml</option>
-                <option value="pack" ${currentUnit === 'pack' ? 'selected' : ''}>pack</option>
-                <option value="jar" ${currentUnit === 'jar' ? 'selected' : ''}>jar</option>
-                <option value="roll" ${currentUnit === 'roll' ? 'selected' : ''}>roll</option>
-                <option value="bottle" ${currentUnit === 'bottle' ? 'selected' : ''}>bottle</option>
-            </select>
-            <div class="actions no-print">
-                <button class="save-button" onclick="saveItem(this)">Save</button>
+    <!-- Category Selector Modal (Center Grid) -->
+    <div id="category-modal" class="modal-overlay" style="align-items: center; justify-content: center;">
+        <div class="modal-content" style="width: 90%; max-width: 400px; border-radius: var(--radius-lg); transform: scale(0.9); padding: 24px;">
+            <h3 style="margin: 0 0 20px 0; text-align: center; font-size: 1.3rem;">Select Category</h3>
+            <div class="unit-grid" id="category-grid" style="grid-template-columns: repeat(2, 1fr);">
+                <!-- Category options will be injected here -->
             </div>
-        `;
-        
-        listItem.style.backgroundColor = '#fffacd'; 
-    }
+            <button type="button" class="btn-block" style="margin-top: 20px; background: var(--bg-color); color: var(--text-main); box-shadow: none; padding: 12px;" onclick="UI.closeCategoryModal()">Cancel</button>
+        </div>
+    </div>
 
-    // --- Function to save the edited item ---
-    function saveItem(button) {
-        const listItem = button.closest('li');
-        const newName = listItem.querySelector('.edit-name').value.trim();
-        const newQuantity = listItem.querySelector('.edit-quantity').value.trim();
-        const newUnit = listItem.querySelector('.edit-unit').value;
-
-        if (newName === "") {
-            alert("Item name cannot be empty.");
-            return;
-        }
-        if (newQuantity === "" || parseFloat(newQuantity) <= 0) {
-            alert("Quantity must be greater than zero.");
-            return;
-        }
-        
-        // Update data attributes
-        listItem.setAttribute('data-name', newName);
-        listItem.setAttribute('data-quantity', newQuantity);
-        listItem.setAttribute('data-unit', newUnit);
-        
-        // Revert back to display mode
-        listItem.innerHTML = `
-            <span class="item-text">${newName}</span>
-            <span class="quantity-display">${newQuantity} ${newUnit}</span>
-            <div class="actions no-print">
-                <button class="edit-button" onclick="editItem(this)">Edit</button>
-                <button class="delete-button" onclick="removeItem(this)">✖</button>
+    <!-- Unit Selector Modal (Center Grid) -->
+    <div id="unit-modal" class="modal-overlay" style="align-items: center; justify-content: center;">
+        <div class="modal-content" style="width: 90%; max-width: 350px; border-radius: var(--radius-lg); transform: scale(0.9); padding: 24px;">
+            <h3 style="margin: 0 0 20px 0; text-align: center; font-size: 1.3rem;">Select Unit</h3>
+            <div class="unit-grid" id="unit-grid">
+                <!-- Unit options will be injected here -->
             </div>
-        `;
-        
-        listItem.style.backgroundColor = '';
-    }
-    
-    // --- Function to remove an item (called by the delete button) ---
-    function removeItem(button) {
-        const listItem = button.closest('li');
-        list.removeChild(listItem);
-    }
+            <button type="button" class="btn-block" style="margin-top: 20px; background: var(--bg-color); color: var(--text-main); box-shadow: none; padding: 12px;" onclick="UI.closeUnitModal()">Cancel</button>
+        </div>
+    </div>
 
-    // --- Function to clear all items from the list ---
-    function clearAllItems() {
-        if (confirm("Are you sure you want to clear the entire list?")) {
-            list.innerHTML = '';
-        }
-    }
-    
-    // --- Function to load the initial list data from the external file ---
-    function loadPredefinedItems() {
-        if (typeof predefinedItems !== 'undefined') {
-            predefinedItems.forEach(item => {
-                const unit = item.unit || 'nos'; 
-                createListItem(item.name, item.quantity, unit);
-            });
-        }
-    }
-    
-    // --- Event Listeners for 'Enter' key ---
-    nameInput.addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            addItemFromInput();
-        }
-    });
-
-    quantityInput.addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
-            event.preventDefault();
-            addItemFromInput();
-        }
-    });
-</script>
-
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
