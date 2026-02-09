@@ -6,23 +6,19 @@
 /* --- THEME MANAGER --- */
 const Theme = {
     init() {
-        const saved = localStorage.getItem('theme') || 'system';
+        const saved = localStorage.getItem('theme') || 'light';
         this.apply(saved);
     },
     apply(theme) {
         localStorage.setItem('theme', theme);
         const root = document.documentElement;
-        if (theme === 'system') {
-            root.removeAttribute('data-theme');
-        } else {
-            root.setAttribute('data-theme', theme);
-        }
+        root.setAttribute('data-theme', theme);
         
         // Update the UI text if on settings page
         const textEl = document.getElementById('selected-theme-text');
         if (textEl) {
-            const labels = { 'light': '☀️ Light', 'dark': '🌙 Dark', 'system': '💻 System' };
-            textEl.textContent = labels[theme] || 'System';
+            const labels = { 'light': '☀️ Light', 'dark': '🌙 Dark' };
+            textEl.textContent = labels[theme] || 'Light';
         }
 
         // Highlight active option in modal
@@ -97,7 +93,7 @@ const Store = {
                 quantity: item.quantity,
                 unit: item.unit || 'nos',
                 purchased: false,
-                category: 'General', // Default
+                category: item.category || 'General',
                 createdAt: new Date().toISOString()
             }));
             this.saveAll(formatted);
@@ -413,11 +409,15 @@ const UI = {
                 card.className = 'card';
                 card.style.marginBottom = '8px';
                 card.style.padding = '14px 18px';
+                const catIcon = this.categoryIcons[item.category] || '📦';
                 card.innerHTML = `
                     <div class="item-checkbox" onclick="Store.togglePurchased('${item.id}')"></div>
                     <div class="item-info" onclick="Store.togglePurchased('${item.id}')">
                         <span class="item-name" style="font-size:1.1rem">${item.name}</span>
-                        <span class="item-details">${item.quantity} ${item.unit}</span>
+                        <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+                            <span class="item-details">${item.quantity} ${item.unit}</span>
+                            <span class="home-cat-badge">${catIcon} ${item.category}</span>
+                        </div>
                     </div>
                 `;
                 dashboardContainer.appendChild(card);

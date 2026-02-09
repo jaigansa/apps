@@ -236,6 +236,19 @@ header h1 {
     border-radius: 6px;
 }
 
+.home-cat-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    background: rgba(5, 150, 105, 0.08);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    text-transform: uppercase;
+    display: inline-block;
+    vertical-align: middle;
+}
+
 .card.purchased .item-name {
     text-decoration: line-through;
     color: var(--text-secondary);
