@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Tasks</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+  
+  <style>
+    :root {
+      --bg-dark: #0f1115;
+      --card-bg: #1d1f24;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --text-main: #e2e2e6;
+      --text-muted: #9ca3af;
+      --danger: #ef4444;
+      --radius-lg: 16px;
+      --radius-md: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: rgba(15, 17, 21, 0.9);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      text-decoration: none;
+      border: 1px solid var(--card-border);
+      transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateX(-2px);
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .add-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .add-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .container {
+      max-width: 640px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px 20px;
+      flex: 1;
+    }
+
+    ul.todo-list {
+      list-style-type: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .todo-item {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--card-border);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: transform 0.15s ease, opacity 0.2s ease;
+      cursor: pointer;
+    }
+
+    .todo-item:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .todo-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .checkbox-icon {
+      color: var(--text-muted);
+      font-size: 24px;
+      user-select: none;
+    }
+
+    .todo-item.completed .checkbox-icon {
+      color: #10b981;
+    }
+
+    .todo-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      overflow: hidden;
+    }
+
+    .todo-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 0.2s ease;
+    }
+
+    .todo-item.completed .todo-name {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .todo-due {
+      font-size: 12px;
+      color: var(--primary);
+      background: rgba(59, 130, 246, 0.1);
+      padding: 2px 8px;
+      border-radius: 12px;
+      display: inline-block;
+      width: fit-content;
+      font-weight: 500;
+    }
+
+    .remove-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+    }
+
+    .remove-btn:hover {
+      color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    /* Modal Popup */
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 9998;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -45%);
+      width: 90%;
+      max-width: 420px;
+      padding: 24px;
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      opacity: 0;
+      transition: all 0.2s ease;
+    }
+
+    .show-popup {
+      display: block;
+      opacity: 1;
+    }
+
+    .popup.show-popup {
+      transform: translate(-50%, -50%);
+    }
+
+    .popup-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--primary);
+    }
+
+    .popup-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .btn-cancel {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--card-border);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-cancel:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 16px;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .empty-state span {
+      font-size: 48px;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-left">
+      <a href="../" class="back-btn" title="Back to Apps">
+        <span class="material-symbols-rounded">arrow_back</span>
+      </a>
+      <h1>To-Dues</h1>
+    </div>
+    <button class="add-btn" onclick="openPopup()">
+      <span class="material-symbols-rounded">add</span> New Task
+    </button>
+  </header>
+
+  <main class="container">
+    <ul id="todoList" class="todo-list">
+      <!-- Dynamically populated -->
+    </ul>
+  </main>
+
+  <!-- Modal & Overlay -->
+  <div id="overlay" class="overlay" onclick="closePopup()"></div>
+  
+  <div id="popup" class="popup">
+    <div class="popup-title">Add New Task</div>
+    <form onsubmit="event.preventDefault(); addTodo();">
+      <div class="form-group">
+        <input type="text" id="nameInput" placeholder="Task name (e.g. Pay Internet Bill)" required>
+        <input type="text" id="todoInput" placeholder="Due date / status (e.g. Tomorrow, 5 PM)" required>
+      </div>
+      <div class="popup-actions">
+        <button type="button" class="btn-cancel" onclick="closePopup()">Cancel</button>
+        <button type="submit" class="add-btn">Add Task</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    function openPopup() {
+      const popup = document.getElementById("popup");
+      const overlay = document.getElementById("overlay");
+      popup.classList.add("show-popup");
+      overlay.classList.add("show-popup");
+      setTimeout(() => document.getElementById("nameInput").focus(), 100);
+    }
+
+    function closePopup() {
+      const popup = document.getElementById("popup");
+      const overlay = document.getElementById("overlay");
+      popup.classList.remove("show-popup");
+      overlay.classList.remove("show-popup");
+    }
+
+    function addTodo() {
+      const nameInput = document.getElementById("nameInput");
+      const todoInput = document.getElementById("todoInput");
+
+      const nameText = nameInput.value.trim();
+      const todoText = todoInput.value.trim();
+
+      if (nameText !== "" && todoText !== "") {
+        const newTodo = {
+          name: nameText,
+          due: todoText,
+          completed: false
+        };
+
+        const todos = JSON.parse(localStorage.getItem("todos")) || [];
+        todos.push(newTodo);
+        localStorage.setItem("todos", JSON.stringify(todos));
+
+        nameInput.value = "";
+        todoInput.value = "";
+
+        closePopup();
+        renderTodoList();
+      }
+    }
+
+    function toggleTodoStatus(index, event) {
+      // Don't toggle if delete button was clicked
+      if (event.target.closest('.remove-btn')) return;
+
+      const todos = JSON.parse(localStorage.getItem("todos")) || [];
+      if (todos[index]) {
+        todos[index].completed = !todos[index].completed;
+        localStorage.setItem("todos", JSON.stringify(todos));
+        renderTodoList();
+      }
+    }
+
+    function removeTodoKey(index, event) {
+      if (event) event.stopPropagation();
+      const todos = JSON.parse(localStorage.getItem("todos")) || [];
+      todos.splice(index, 1);
+      localStorage.setItem("todos", JSON.stringify(todos));
+      renderTodoList();
+    }
+
+    function renderTodoList() {
+      const todoList = document.getElementById("todoList");
+      todoList.innerHTML = "";
+
+      const todos = JSON.parse(localStorage.getItem("todos")) || [];
+
+      if (todos.length === 0) {
+        todoList.innerHTML = `
+          <div class="empty-state">
+            <span class="material-symbols-rounded">task_alt</span>
+            <p>No task due yet. Click "+ New Task" to create one!</p>
+          </div>
+        `;
+        return;
+      }
+
+      todos.forEach(function(todo, index) {
+        const item = document.createElement("li");
+        item.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+        item.onclick = (e) => toggleTodoStatus(index, e);
+
+        item.innerHTML = `
+          <div class="todo-left">
+            <span class="material-symbols-rounded checkbox-icon">
+              ${todo.completed ? 'check_circle' : 'radios'}
+            </span>
+            <div class="todo-content">
+              <span class="todo-name">${escapeHtml(todo.name)}</span>
+              <span class="todo-due">Due: ${escapeHtml(todo.due)}</span>
+            </div>
+          </div>
+          <button class="remove-btn" onclick="removeTodoKey(${index}, event)" title="Delete Task">
+            <span class="material-symbols-rounded">delete</span>
+          </button>
+        `;
+
+        todoList.appendChild(item);
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.innerText = text;
+      return div.innerHTML;
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+      renderTodoList();
+    });
+  </script>
+</body>
+</html>

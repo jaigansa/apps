@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Chroma</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <style>
+        :root {
+            --bg-dark: #0f1117;
+            --card-bg: rgba(26, 29, 39, 0.85);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --font-head: 'Outfit', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-head);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 40px;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 24px;
+            background: rgba(15, 17, 23, 0.9);
+            backdrop-filter: blur(12px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            text-decoration: none;
+            border: 1px solid var(--card-border);
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(-2px);
+        }
+
+        .app-title {
+            font-size: 22px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a5b4fc, #6366f1, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 30px;
+            border: 1px solid var(--card-border);
+        }
+
+        .tab-btn {
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            font-family: var(--font-head);
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tab-btn.active {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+        }
+
+        .container {
+            max-width: 1100px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 24px 20px;
+            flex: 1;
+        }
+
+        .section-view {
+            display: none;
+            animation: fadeIn 0.25s ease-in-out forwards;
+        }
+
+        .section-view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* PALETTE GENERATOR */
+        .controls-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            background: var(--card-bg);
+            padding: 16px 20px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--card-border);
+        }
+
+        .controls-left {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: var(--radius-md);
+            font-family: var(--font-head);
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+        }
+
+        .btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.07);
+            color: var(--text-main);
+            box-shadow: none;
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        select, input[type="text"], input[type="number"] {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 8px 12px;
+            border-radius: var(--radius-md);
+            font-family: var(--font-head);
+            font-size: 14px;
+            outline: none;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--accent);
+        }
+
+        .palette-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            min-height: 420px;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .color-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--card-border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            position: relative;
+        }
+
+        .color-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+        }
+
+        .color-swatch {
+            flex: 1;
+            min-height: 260px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .color-swatch .copy-overlay {
+            opacity: 0;
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(4px);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 13px;
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+
+        .color-swatch:hover .copy-overlay {
+            opacity: 1;
+        }
+
+        .color-details {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .color-hex {
+            font-family: var(--font-mono);
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .lock-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 50%;
+            padding: 4px;
+            display: flex;
+            transition: color 0.15s ease;
+        }
+
+        .lock-btn.locked {
+            color: #f59e0b;
+        }
+
+        .color-subtext {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* PICKER & CONVERTER */
+        .picker-grid {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+        }
+
+        .picker-card, .tool-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--card-border);
+            padding: 24px;
+        }
+
+        .color-input-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            cursor: pointer;
+            background: transparent;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            border: 4px solid rgba(255,255,255,0.1);
+        }
+
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 50%;
+        }
+
+        .conversion-table {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .convert-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 12px 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .convert-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .convert-value {
+            font-family: var(--font-mono);
+            font-size: 14px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            border-radius: 4px;
+        }
+
+        .icon-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* GRADIENT STUDIO */
+        .gradient-preview {
+            height: 240px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 24px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--card-border);
+            position: relative;
+        }
+
+        .gradient-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-group label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .css-code-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--card-border);
+            padding: 16px;
+            border-radius: var(--radius-md);
+            font-family: var(--font-mono);
+            font-size: 13px;
+            color: #38bdf8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            word-break: break-all;
+        }
+
+        /* CONTRAST CHECKER */
+        .contrast-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .contrast-preview-card {
+            padding: 32px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            min-height: 200px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .badge-list {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .badge-pass {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+
+        .badge-fail {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+
+        /* SAVED PALETTES */
+        .saved-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
+        .saved-card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--card-border);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .saved-strip {
+            height: 60px;
+            border-radius: var(--radius-md);
+            display: flex;
+            overflow: hidden;
+        }
+
+        .saved-swatch {
+            flex: 1;
+            height: 100%;
+        }
+
+        .saved-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #10b981;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+            .nav-tabs {
+                width: 100%;
+                overflow-x: auto;
+            }
+            .palette-grid {
+                grid-template-columns: 1fr;
+                min-height: auto;
+            }
+            .color-swatch {
+                min-height: 100px;
+            }
+            .picker-grid, .contrast-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <a href="../" class="back-btn" title="Back to Apps">
+                <span class="material-symbols-rounded">arrow_back</span>
+            </a>
+            <h1 class="app-title">Color Studio</h1>
+        </div>
+        <nav class="nav-tabs">
+            <button class="tab-btn active" onclick="switchTab('palette')">
+                <span class="material-symbols-rounded">palette</span> Palettes
+            </button>
+            <button class="tab-btn" onclick="switchTab('picker')">
+                <span class="material-symbols-rounded">colorize</span> Picker
+            </button>
+            <button class="tab-btn" onclick="switchTab('gradient')">
+                <span class="material-symbols-rounded">gradient</span> Gradient
+            </button>
+            <button class="tab-btn" onclick="switchTab('contrast')">
+                <span class="material-symbols-rounded">contrast</span> Contrast
+            </button>
+            <button class="tab-btn" onclick="switchTab('saved')">
+                <span class="material-symbols-rounded">bookmark</span> Saved
+            </button>
+        </nav>
+    </header>
+
+    <main class="container">
+        <!-- 1. PALETTE GENERATOR -->
+        <section id="tab-palette" class="section-view active">
+            <div class="controls-bar">
+                <div class="controls-left">
+                    <button class="btn" onclick="generatePalette()">
+                        <span class="material-symbols-rounded">refresh</span> Generate Spacebar
+                    </button>
+                    <select id="harmonySelect" onchange="generatePalette()">
+                        <option value="random">Random Aesthetic</option>
+                        <option value="analogous">Analogous</option>
+                        <option value="monochromatic">Monochromatic</option>
+                        <option value="complementary">Complementary</option>
+                        <option value="triadic">Triadic</option>
+                    </select>
+                </div>
+                <button class="btn btn-secondary" onclick="saveCurrentPalette()">
+                    <span class="material-symbols-rounded">bookmark_add</span> Save Palette
+                </button>
+            </div>
+
+            <div class="palette-grid" id="paletteGrid"></div>
+        </section>
+
+        <!-- 2. PICKER & CONVERTER -->
+        <section id="tab-picker" class="section-view">
+            <div class="picker-grid">
+                <div class="picker-card color-input-wrapper">
+                    <h3 style="margin-bottom: 8px;">Pick Color</h3>
+                    <input type="color" id="masterPicker" value="#6366f1" oninput="updateColorDetails(this.value)">
+                    <div style="font-family: var(--font-mono); font-size: 18px; font-weight:700;" id="pickerHex">#6366F1</div>
+                </div>
+                <div class="tool-card">
+                    <h3 style="margin-bottom: 16px;">Color Code Conversions</h3>
+                    <div class="conversion-table">
+                        <div class="convert-row">
+                            <span class="convert-label">HEX</span>
+                            <span class="convert-value">
+                                <span id="valHex">#6366F1</span>
+                                <button class="icon-btn" onclick="copyText(document.getElementById('valHex').innerText)"><span class="material-symbols-rounded">content_copy</span></button>
+                            </span>
+                        </div>
+                        <div class="convert-row">
+                            <span class="convert-label">RGB</span>
+                            <span class="convert-value">
+                                <span id="valRgb">rgb(99, 102, 241)</span>
+                                <button class="icon-btn" onclick="copyText(document.getElementById('valRgb').innerText)"><span class="material-symbols-rounded">content_copy</span></button>
+                            </span>
+                        </div>
+                        <div class="convert-row">
+                            <span class="convert-label">HSL</span>
+                            <span class="convert-value">
+                                <span id="valHsl">hsl(239, 84%, 67%)</span>
+                                <button class="icon-btn" onclick="copyText(document.getElementById('valHsl').innerText)"><span class="material-symbols-rounded">content_copy</span></button>
+                            </span>
+                        </div>
+                        <div class="convert-row">
+                            <span class="convert-label">HSV / HSB</span>
+                            <span class="convert-value">
+                                <span id="valHsv">hsv(239, 59%, 95%)</span>
+                                <button class="icon-btn" onclick="copyText(document.getElementById('valHsv').innerText)"><span class="material-symbols-rounded">content_copy</span></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. GRADIENT STUDIO -->
+        <section id="tab-gradient" class="section-view">
+            <div class="tool-card">
+                <div class="gradient-preview" id="gradientBox">
+                    <span style="background: rgba(0,0,0,0.4); padding: 8px 16px; border-radius: 20px; font-weight:600;">Gradient Preview</span>
+                </div>
+
+                <div class="gradient-controls">
+                    <div class="control-group">
+                        <label>Color Stop 1</label>
+                        <input type="color" id="gradColor1" value="#6366f1" oninput="updateGradient()" style="width:100%; height:40px; border-radius:8px;">
+                    </div>
+                    <div class="control-group">
+                        <label>Color Stop 2</label>
+                        <input type="color" id="gradColor2" value="#ec4899" oninput="updateGradient()" style="width:100%; height:40px; border-radius:8px;">
+                    </div>
+                    <div class="control-group">
+                        <label>Gradient Type</label>
+                        <select id="gradType" onchange="updateGradient()">
+                            <option value="linear">Linear</option>
+                            <option value="radial">Radial</option>
+                        </select>
+                    </div>
+                    <div class="control-group" id="angleGroup">
+                        <label>Angle (<span id="angleVal">135</span>°)</label>
+                        <input type="range" id="gradAngle" min="0" max="360" value="135" oninput="updateGradient()">
+                    </div>
+                </div>
+
+                <div class="css-code-box">
+                    <span id="gradCssText">background: linear-gradient(135deg, #6366f1, #ec4899);</span>
+                    <button class="btn" onclick="copyText(document.getElementById('gradCssText').innerText)">
+                        <span class="material-symbols-rounded">content_copy</span> Copy CSS
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. CONTRAST CHECKER -->
+        <section id="tab-contrast" class="section-view">
+            <div class="tool-card">
+                <div class="contrast-grid">
+                    <div>
+                        <h3 style="margin-bottom: 16px;">Contrast Settings</h3>
+                        <div class="control-group" style="margin-bottom: 16px;">
+                            <label>Text Color</label>
+                            <input type="color" id="textColor" value="#ffffff" oninput="updateContrast()" style="width:100%; height:40px; border-radius:8px;">
+                        </div>
+                        <div class="control-group" style="margin-bottom: 16px;">
+                            <label>Background Color</label>
+                            <input type="color" id="bgColor" value="#6366f1" oninput="updateContrast()" style="width:100%; height:40px; border-radius:8px;">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="contrast-preview-card" id="contrastPreviewBox">
+                            <h2 style="font-size: 24px;" id="contrastPreviewHead">Sample Heading Text</h2>
+                            <p style="font-size: 14px;" id="contrastPreviewBody">This is how body text will look when using these color choices.</p>
+                        </div>
+                        <div style="margin-top: 16px; text-align: center;">
+                            <div style="font-size: 28px; font-weight: 700; font-family: var(--font-mono);" id="contrastRatio">7.2 : 1</div>
+                            <div class="badge-list" style="justify-content: center;" id="contrastBadges"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. SAVED PALETTES -->
+        <section id="tab-saved" class="section-view">
+            <div id="savedContainer">
+                <div class="saved-grid" id="savedGrid"></div>
+            </div>
+        </section>
+    </main>
+
+    <div class="toast" id="toast">
+        <span class="material-symbols-rounded">check_circle</span>
+        <span id="toastMsg">Copied to clipboard!</span>
+    </div>
+
+    <script>
+        // App State
+        let currentPalette = [];
+        let lockedStates = [false, false, false, false, false];
+
+        // Init
+        document.addEventListener("DOMContentLoaded", () => {
+            generatePalette();
+            updateColorDetails("#6366f1");
+            updateGradient();
+            updateContrast();
+            renderSavedPalettes();
+
+            // Keyboard Spacebar trigger
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' && document.getElementById('tab-palette').classList.contains('active')) {
+                    if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'SELECT') {
+                        e.preventDefault();
+                        generatePalette();
+                    }
+                }
+            });
+        });
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.section-view').forEach(sec => sec.classList.remove('active'));
+            
+            event.currentTarget.classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        }
+
+        // Color Utilities
+        function randomHex() {
+            return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+        }
+
+        function hexToRgb(hex) {
+            let c = hex.replace('#', '');
+            if (c.length === 3) c = c.split('').map(x => x + x).join('');
+            const num = parseInt(c, 16);
+            return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+        }
+
+        function rgbToHex(r, g, b) {
+            return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+        }
+
+        function rgbToHsl(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            const max = Math.max(r, g, b), min = Math.min(r, g, b);
+            let h, s, l = (max + min) / 2;
+
+            if (max === min) {
+                h = s = 0;
+            } else {
+                const d = max - min;
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+            return { h: Math.round(h * 360), s: Math.round(s * 100), l: Math.round(l * 100) };
+        }
+
+        function hslToRgb(h, s, l) {
+            h /= 360; s /= 100; l /= 100;
+            let r, g, b;
+
+            if (s === 0) {
+                r = g = b = l;
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+            return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255) };
+        }
+
+        function rgbToHsv(r, g, b) {
+            r /= 255; g /= 255; b /= 255;
+            const max = Math.max(r, g, b), min = Math.min(r, g, b);
+            const d = max - min;
+            let h, s = max === 0 ? 0 : d / max, v = max;
+
+            if (max === min) {
+                h = 0;
+            } else {
+                switch (max) {
+                    case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                    case g: h = (b - r) / d + 2; break;
+                    case b: h = (r - g) / d + 4; break;
+                }
+                h /= 6;
+            }
+            return { h: Math.round(h * 360), s: Math.round(s * 100), v: Math.round(v * 100) };
+        }
+
+        // Palette Generation Logic
+        function generatePalette() {
+            const mode = document.getElementById('harmonySelect').value;
+            const baseHex = currentPalette.length > 0 ? currentPalette[0] : randomHex();
+            const baseRgb = hexToRgb(baseHex);
+            const baseHsl = rgbToHsl(baseRgb.r, baseRgb.g, baseRgb.b);
+
+            let newColors = [];
+
+            for (let i = 0; i < 5; i++) {
+                if (lockedStates[i] && currentPalette[i]) {
+                    newColors.push(currentPalette[i]);
+                    continue;
+                }
+
+                if (mode === 'monochromatic') {
+                    const l = Math.max(10, Math.min(90, (i + 1) * 18));
+                    const rgb = hslToRgb(baseHsl.h, baseHsl.s, l);
+                    newColors.push(rgbToHex(rgb.r, rgb.g, rgb.b));
+                } else if (mode === 'analogous') {
+                    const h = (baseHsl.h + (i - 2) * 25 + 360) % 360;
+                    const rgb = hslToRgb(h, baseHsl.s, baseHsl.l);
+                    newColors.push(rgbToHex(rgb.r, rgb.g, rgb.b));
+                } else if (mode === 'complementary') {
+                    const h = i % 2 === 0 ? baseHsl.h : (baseHsl.h + 180) % 360;
+                    const l = 20 + i * 15;
+                    const rgb = hslToRgb(h, baseHsl.s, l);
+                    newColors.push(rgbToHex(rgb.r, rgb.g, rgb.b));
+                } else if (mode === 'triadic') {
+                    const offset = (i % 3) * 120;
+                    const h = (baseHsl.h + offset) % 360;
+                    const rgb = hslToRgb(h, baseHsl.s, 40 + i * 10);
+                    newColors.push(rgbToHex(rgb.r, rgb.g, rgb.b));
+                } else {
+                    newColors.push(randomHex());
+                }
+            }
+
+            currentPalette = newColors;
+            renderPalette();
+        }
+
+        function toggleLock(index, event) {
+            event.stopPropagation();
+            lockedStates[index] = !lockedStates[index];
+            renderPalette();
+        }
+
+        function renderPalette() {
+            const grid = document.getElementById('paletteGrid');
+            grid.innerHTML = '';
+
+            currentPalette.forEach((hex, i) => {
+                const rgb = hexToRgb(hex);
+                const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+                const card = document.createElement('div');
+                card.className = 'color-card';
+                card.innerHTML = `
+                    <div class="color-swatch" style="background-color: ${hex};" onclick="copyText('${hex.toUpperCase()}')">
+                        <div class="copy-overlay">Copy HEX</div>
+                    </div>
+                    <div class="color-details">
+                        <div class="color-hex">
+                            ${hex.toUpperCase()}
+                            <button class="lock-btn ${lockedStates[i] ? 'locked' : ''}" onclick="toggleLock(${i}, event)" title="Lock Color">
+                                <span class="material-symbols-rounded">${lockedStates[i] ? 'lock' : 'lock_open'}</span>
+                            </button>
+                        </div>
+                        <div class="color-subtext">RGB: ${rgb.r}, ${rgb.g}, ${rgb.b}</div>
+                        <div class="color-subtext">HSL: ${hsl.h}°, ${hsl.s}%, ${hsl.l}%</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Picker Updates
+        function updateColorDetails(hex) {
+            document.getElementById('pickerHex').innerText = hex.toUpperCase();
+            document.getElementById('valHex').innerText = hex.toUpperCase();
+
+            const rgb = hexToRgb(hex);
+            document.getElementById('valRgb').innerText = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+
+            const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+            document.getElementById('valHsl').innerText = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+
+            const hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+            document.getElementById('valHsv').innerText = `hsv(${hsv.h}, ${hsv.s}%, ${hsv.v}%)`;
+        }
+
+        // Gradient Updates
+        function updateGradient() {
+            const c1 = document.getElementById('gradColor1').value;
+            const c2 = document.getElementById('gradColor2').value;
+            const type = document.getElementById('gradType').value;
+            const angle = document.getElementById('gradAngle').value;
+
+            document.getElementById('angleVal').innerText = angle;
+            document.getElementById('angleGroup').style.display = type === 'linear' ? 'flex' : 'none';
+
+            let gradCss = type === 'linear' 
+                ? `linear-gradient(${angle}deg, ${c1}, ${c2})`
+                : `radial-gradient(circle, ${c1}, ${c2})`;
+
+            document.getElementById('gradientBox').style.background = gradCss;
+            document.getElementById('gradCssText').innerText = `background: ${gradCss};`;
+        }
+
+        // Contrast Logic (WCAG 2.1)
+        function getLuminance(r, g, b) {
+            let [rs, gs, bs] = [r, g, b].map(v => {
+                v /= 255;
+                return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+            });
+            return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+        }
+
+        function updateContrast() {
+            const fg = document.getElementById('textColor').value;
+            const bg = document.getElementById('bgColor').value;
+
+            const box = document.getElementById('contrastPreviewBox');
+            box.style.color = fg;
+            box.style.backgroundColor = bg;
+
+            const rgb1 = hexToRgb(fg);
+            const rgb2 = hexToRgb(bg);
+
+            const lum1 = getLuminance(rgb1.r, rgb1.g, rgb1.b);
+            const lum2 = getLuminance(rgb2.r, rgb2.g, rgb2.b);
+
+            const ratio = (Math.max(lum1, lum2) + 0.05) / (Math.min(lum1, lum2) + 0.05);
+            const ratioStr = ratio.toFixed(2);
+
+            document.getElementById('contrastRatio').innerText = `${ratioStr} : 1`;
+
+            const badges = document.getElementById('contrastBadges');
+            badges.innerHTML = `
+                <span class="badge ${ratio >= 4.5 ? 'badge-pass' : 'badge-fail'}">AA Normal</span>
+                <span class="badge ${ratio >= 3.0 ? 'badge-pass' : 'badge-fail'}">AA Large</span>
+                <span class="badge ${ratio >= 7.0 ? 'badge-pass' : 'badge-fail'}">AAA Normal</span>
+            `;
+        }
+
+        // Local Storage Saved Palettes
+        function saveCurrentPalette() {
+            let saved = JSON.parse(localStorage.getItem('colorStudioPalettes') || '[]');
+            saved.unshift({
+                id: Date.now(),
+                colors: [...currentPalette],
+                date: new Date().toLocaleDateString()
+            });
+            localStorage.setItem('colorStudioPalettes', JSON.stringify(saved));
+            showToast("Palette saved successfully!");
+            renderSavedPalettes();
+        }
+
+        function renderSavedPalettes() {
+            let saved = JSON.parse(localStorage.getItem('colorStudioPalettes') || '[]');
+            const grid = document.getElementById('savedGrid');
+            grid.innerHTML = '';
+
+            if (saved.length === 0) {
+                grid.innerHTML = '<p style="color: var(--text-muted); font-size: 14px;">No saved palettes yet. Click "Save Palette" on the generator tab to save one!</p>';
+                return;
+            }
+
+            saved.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'saved-card';
+                
+                let swatchesHtml = item.colors.map(hex => `
+                    <div class="saved-swatch" style="background-color:${hex};" title="${hex}"></div>
+                `).join('');
+
+                card.innerHTML = `
+                    <div class="saved-header">
+                        <span>Palette (${item.date})</span>
+                        <button class="icon-btn" onclick="deletePalette(${item.id})">
+                            <span class="material-symbols-rounded">delete</span>
+                        </button>
+                    </div>
+                    <div class="saved-strip">${swatchesHtml}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function deletePalette(id) {
+            let saved = JSON.parse(localStorage.getItem('colorStudioPalettes') || '[]');
+            saved = saved.filter(item => item.id !== id);
+            localStorage.setItem('colorStudioPalettes', JSON.stringify(saved));
+            renderSavedPalettes();
+            showToast("Palette removed.");
+        }
+
+        // Copy Helper
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`Copied ${text}`);
+            });
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
