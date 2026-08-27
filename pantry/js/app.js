@@ -1,6 +1,7 @@
 /**
  * Grocery App - PWA Logic
  * Modules: Store (Data), UI (Rendering), App (Controller)
+ * v2: multi-list, favorites, history, search/sort/hide, undo, export/import, steppers
  */
 
 /* --- THEME MANAGER --- */
@@ -13,18 +14,16 @@ const Theme = {
         localStorage.setItem('theme', theme);
         const root = document.documentElement;
         root.setAttribute('data-theme', theme);
-        
-        // Update the UI text if on settings page
+
         const textEl = document.getElementById('selected-theme-text');
         if (textEl) {
             const labels = { 'light': '☀️ Light', 'dark': '🌙 Dark' };
             textEl.textContent = labels[theme] || 'Light';
         }
 
-        // Highlight active option in modal
         document.querySelectorAll('#theme-grid .unit-option').forEach(el => {
             el.classList.remove('active');
-            if (el.getAttribute('onclick').includes(`'${theme}'`)) {
+            if (el.getAttribute('onclick') && el.getAttribute('onclick').includes(`'${theme}'`)) {
                 el.classList.add('active');
             }
         });
@@ -33,62 +32,338 @@ const Theme = {
 
 /* --- DATA STORE --- */
 const Store = {
-    DB_KEY: 'tamil_grocery_list_v1',
-    
-    getAll() {
-        const data = localStorage.getItem(this.DB_KEY);
-        return data ? JSON.parse(data) : [];
+    DB_KEY: 'pantry_db_v2',
+    LEGACY_KEY: 'tamil_grocery_list_v1',
+
+    defaultList() {
+        return { id: 'list_default', name: 'My List', createdAt: new Date().toISOString(), archived: false };
     },
 
-    saveAll(items) {
-        localStorage.setItem(this.DB_KEY, JSON.stringify(items));
-        UI.render(); // Re-render on save
+    getDB() {
+        const data = localStorage.getItem(this.DB_KEY);
+        if (data) return JSON.parse(data);
+        return this.migrate();
+    },
+
+    migrate() {
+        let lists = [this.defaultList()];
+        let items = [];
+
+        const legacy = localStorage.getItem(this.LEGACY_KEY);
+        if (legacy) {
+            try {
+                const arr = JSON.parse(legacy);
+                if (Array.isArray(arr)) {
+                    items = arr.map((it, i) => ({
+                        id: it.id || ('mig_' + i),
+                        listId: 'list_default',
+                        name: it.name,
+                        quantity: it.quantity || 1,
+                        unit: it.unit || 'nos',
+                        category: it.category || 'General',
+                        purchased: !!it.purchased,
+                        createdAt: it.createdAt || new Date().toISOString()
+                    }));
+                }
+            } catch (e) { /* ignore */ }
+        }
+
+        const db = { lists, items, activeListId: 'list_default', favorites: [] };
+        this.saveDB(db);
+        return db;
+    },
+
+    saveDB(db) {
+        localStorage.setItem(this.DB_KEY, JSON.stringify(db));
+    },
+
+    /* --- Items --- */
+    getAll() {
+        return this.getDB().items;
+    },
+
+    getActiveListId() {
+        const db = this.getDB();
+        if (!db.lists.find(l => l.id === db.activeListId)) {
+            db.activeListId = db.lists[0] ? db.lists[0].id : 'list_default';
+        }
+        return db.activeListId;
+    },
+
+    getActiveItems() {
+        const db = this.getDB();
+        return db.items.filter(i => i.listId === this.getActiveListId());
+    },
+
+    persist(extra) {
+        const db = this.getDB();
+        if (extra) Object.assign(db, extra);
+        this.saveDB(db);
+        UI.render();
         UI.updateDashboard();
+        UI.renderLists();
     },
 
     add(item) {
-        const items = this.getAll();
-        item.id = Date.now().toString();
+        const db = this.getDB();
+        item.id = item.id || Date.now().toString() + Math.random().toString(36).slice(2, 6);
         item.purchased = false;
         item.category = item.category || 'General';
+        item.listId = item.listId || this.getActiveListId();
         item.createdAt = new Date().toISOString();
-        items.unshift(item); // Add to top
-        this.saveAll(items);
+        db.items.unshift(item);
+        this.bumpFavorite(db, item, true);
+        this.saveDB(db);
+        UI.render();
+        UI.updateDashboard();
     },
 
     update(id, updates) {
-        let items = this.getAll();
+        let items = this.getDB().items;
         items = items.map(item => item.id === id ? { ...item, ...updates } : item);
-        this.saveAll(items);
+        this.persist({ items });
     },
 
     delete(id) {
-        let items = this.getAll();
+        let items = this.getDB().items;
         items = items.filter(item => item.id !== id);
-        this.saveAll(items);
+        this.persist({ items });
     },
 
     togglePurchased(id) {
-        let items = this.getAll();
-        const item = items.find(i => i.id === id);
-        if (item) {
-            item.purchased = !item.purchased;
-            this.saveAll(items);
-            UI.updateDashboard(); // Force update dashboard stats
-        }
+        const db = this.getDB();
+        let changed = null;
+        db.items = db.items.map(item => {
+            if (item.id === id) {
+                item.purchased = !item.purchased;
+                changed = item;
+            }
+            return item;
+        });
+        if (changed) this.bumpFavorite(db, changed, !changed.purchased);
+        this.saveDB(db);
+        UI.render();
+        UI.updateDashboard();
     },
-    
+
+    clearPurchased() {
+        const db = this.getDB();
+        const listId = this.getActiveListId();
+        const qty = db.items.filter(i => i.listId === listId && i.purchased).length;
+        if (qty === 0) return;
+        db.items = db.items.filter(i => !(i.listId === listId && i.purchased));
+        this.saveDB(db);
+        UI.render();
+        UI.updateDashboard();
+    },
+
     clearAll() {
-        if(confirm('Are you sure you want to delete all items?')) {
-            this.saveAll([]);
+        if (confirm('Are you sure you want to delete ALL lists and data? This cannot be undone.')) {
+            const db = { lists: [this.defaultList()], items: [], activeListId: 'list_default', favorites: [] };
+            this.saveDB(db);
+            UI.render();
+            UI.updateDashboard();
+            UI.renderLists();
         }
     },
 
-    // Load initial data from the old list_data.js if DB is empty
+    /* --- Favorites --- */
+    bumpFavorite(db, item, isAdd) {
+        const key = (item.name || '').trim().toLowerCase();
+        if (!key) return;
+        if (!db.favorites) db.favorites = [];
+        const fav = db.favorites.find(f => f.key === key);
+        if (fav) {
+            if (isAdd) {
+                fav.count++;
+                fav.lastUsed = new Date().toISOString();
+            }
+        } else if (isAdd) {
+            db.favorites.push({
+                key,
+                name: item.name,
+                unit: item.unit || 'nos',
+                category: item.category || 'General',
+                qty: item.quantity || 1,
+                count: 1,
+                lastUsed: new Date().toISOString()
+            });
+        }
+    },
+
+    getFavorites(limit) {
+        const db = this.getDB();
+        const favs = [...(db.favorites || [])].sort((a, b) => (b.count - a.count) || (b.lastUsed > a.lastUsed ? 1 : -1));
+        return limit ? favs.slice(0, limit) : favs;
+    },
+
+    isFavorite(name) {
+        const db = this.getDB();
+        const key = (name || '').trim().toLowerCase();
+        if (!key) return false;
+        return !!(db.favorites || []).find(f => f.key === key);
+    },
+
+    toggleFavorite(name, unit, category, quantity) {
+        const db = this.getDB();
+        const key = (name || '').trim().toLowerCase();
+        if (!key) return;
+        if (!db.favorites) db.favorites = [];
+        const idx = db.favorites.findIndex(f => f.key === key);
+        if (idx >= 0) {
+            db.favorites.splice(idx, 1);
+        } else {
+            db.favorites.push({
+                key,
+                name,
+                unit: unit || 'nos',
+                category: category || 'General',
+                qty: quantity || 1,
+                count: 1,
+                lastUsed: new Date().toISOString()
+            });
+        }
+        this.saveDB(db);
+    },
+
+    addFromFavorite(fav) {
+        const db = this.getDB();
+        const listId = this.getActiveListId();
+        const existing = db.items.find(i => i.listId === listId &&
+            (i.name || '').trim().toLowerCase() === (fav.name || '').trim().toLowerCase());
+        if (existing) {
+            const qty = (parseFloat(existing.quantity) || 1) + 1;
+            this.update(existing.id, { quantity: qty });
+            return;
+        }
+        this.add({
+            name: fav.name,
+            quantity: fav.qty || 1,
+            unit: fav.unit || 'nos',
+            category: fav.category || 'General'
+        });
+    },
+
+    /* --- Lists --- */
+    getLists() {
+        const db = this.getDB();
+        if (!db.lists || db.lists.length === 0) db.lists = [this.defaultList()];
+        return db.lists;
+    },
+
+    getActiveList() {
+        const lists = this.getLists();
+        return lists.find(l => l.id === this.getActiveListId()) || lists[0];
+    },
+
+    setActiveList(id) {
+        const db = this.getDB();
+        if (db.lists.find(l => l.id === id)) db.activeListId = id;
+        this.saveDB(db);
+        UI.render();
+        UI.updateDashboard();
+        UI.renderLists();
+    },
+
+    createList(name) {
+        const db = this.getDB();
+        const trimmed = (name || '').trim() || 'New List';
+        const list = { id: 'list_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), name: trimmed, createdAt: new Date().toISOString(), archived: false };
+        db.lists.push(list);
+        db.activeListId = list.id;
+        this.saveDB(db);
+        UI.render();
+        UI.updateDashboard();
+        UI.renderLists();
+        return list;
+    },
+
+    renameList(id, name) {
+        const db = this.getDB();
+        const list = db.lists.find(l => l.id === id);
+        if (list) {
+            list.name = (name || '').trim() || list.name;
+        }
+        this.saveDB(db);
+        UI.renderLists();
+    },
+
+    deleteList(id) {
+        const db = this.getDB();
+        if (db.lists.length <= 1) return alert('You must keep at least one list.');
+        const list = db.lists.find(l => l.id === id);
+        if (!list) return;
+        if (list.archived) {
+            if (!confirm(`Permanently delete history "${list.name}"?`)) return;
+            db.lists = db.lists.filter(l => l.id !== id);
+            db.items = db.items.filter(i => i.listId !== id);
+        } else {
+            if (!confirm(`Delete "${list.name}" and all its items?`)) return;
+            db.lists = db.lists.filter(l => l.id !== id);
+            db.items = db.items.filter(i => i.listId !== id);
+        }
+        if (db.activeListId === id) db.activeListId = db.lists[0].id;
+        this.saveDB(db);
+        UI.render();
+        UI.updateDashboard();
+        UI.renderLists();
+    },
+
+    archiveList(id) {
+        const db = this.getDB();
+        const list = db.lists.find(l => l.id === id);
+        if (!list || list.archived) return;
+        list.archived = true;
+        this.saveDB(db);
+        UI.render();
+        UI.updateDashboard();
+        UI.renderLists();
+    },
+
+    /* --- Export / Import --- */
+    exportData() {
+        const db = this.getDB();
+        const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'grocery-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    },
+
+    importData(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (!data || !Array.isArray(data.lists) || !Array.isArray(data.items)) {
+                    throw new Error('Invalid format');
+                }
+                if (!data.favorites) data.favorites = [];
+                if (!data.activeListId || !data.lists.find(l => l.id === data.activeListId)) {
+                    data.activeListId = data.lists[0].id;
+                }
+                this.saveDB(data);
+                UI.render();
+                UI.updateDashboard();
+                UI.renderLists();
+            } catch (err) {
+                alert('Import failed: invalid file.');
+            }
+        };
+        reader.readAsText(file);
+    },
+
+    // Load initial data from legacy predefined (js/data.js) on first run
     initData(predefinedItems) {
-        if (this.getAll().length === 0 && predefinedItems) {
-            const formatted = predefinedItems.map((item, index) => ({
+        const db = this.getDB();
+        if (db.lists.length === 1 && db.lists[0].id === 'list_default' && db.items.length === 0 && predefinedItems && predefinedItems.length) {
+            const items = predefinedItems.map((item, index) => ({
                 id: 'init_' + index,
+                listId: 'list_default',
                 name: item.name,
                 quantity: item.quantity,
                 unit: item.unit || 'nos',
@@ -96,7 +371,8 @@ const Store = {
                 category: item.category || 'General',
                 createdAt: new Date().toISOString()
             }));
-            this.saveAll(formatted);
+            db.items = items;
+            this.saveDB(db);
         }
     }
 };
@@ -104,39 +380,62 @@ const Store = {
 /* --- UI RENDERER --- */
 const UI = {
     editingItemId: null,
+    editingListId: null,
     categoryIcons: {},
+    searchQuery: '',
+    hideBought: false, // kept for render filtering compatibility
 
     init() {
-        // Tab Navigation
-        document.querySelectorAll('.nav-item').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const targetId = btn.getAttribute('data-target');
-                this.switchTab(targetId);
-            });
-        });
+        // Settings entry (header top-right gear)
+        const settingsBtn = document.getElementById('settings-btn');
+        if (settingsBtn) settingsBtn.addEventListener('click', () => this.openSettings());
 
-        // FAB
-        document.getElementById('fab-add').addEventListener('click', () => {
+        // FAB: click = add item, long press = print
+        const fab = document.getElementById('fab-add');
+        let fabPressTimer = null;
+        let fabLongPressed = false;
+        const FAB_LONG_PRESS_MS = 600;
+        const startFabPress = () => {
+            fabLongPressed = false;
+            fabPressTimer = setTimeout(() => {
+                fabLongPressed = true;
+                if (navigator.vibrate) navigator.vibrate(50);
+                window.print();
+            }, FAB_LONG_PRESS_MS);
+        };
+        const cancelFabPress = () => {
+            if (fabPressTimer) { clearTimeout(fabPressTimer); fabPressTimer = null; }
+        };
+        fab.addEventListener('pointerdown', startFabPress);
+        fab.addEventListener('pointerup', cancelFabPress);
+        fab.addEventListener('pointerleave', cancelFabPress);
+        fab.addEventListener('pointercancel', cancelFabPress);
+        fab.addEventListener('contextmenu', (e) => e.preventDefault());
+        fab.addEventListener('click', () => {
+            if (fabLongPressed) { fabLongPressed = false; return; }
             this.openModal();
         });
 
-        // Modal Close
+        // Modal Close (backdrop)
         document.querySelectorAll('.modal-overlay').forEach(overlay => {
             overlay.addEventListener('click', (e) => {
-                if(e.target === e.currentTarget) {
+                if (e.target === e.currentTarget) {
                     this.closeModal();
                     this.closeUnitModal();
                     this.closeCategoryModal();
                     this.closeThemeModal();
+                    this.closeListModal();
+                    this.closeNewListModal();
+                    this.closeSettings();
                 }
             });
         });
 
-        // Theme Selector Logic
+        // Theme Selector
         const themeBtn = document.getElementById('theme-selector-btn');
         if (themeBtn) themeBtn.addEventListener('click', () => this.openThemeModal());
 
-        // Category Selector Logic
+        // Category Selector
         const categoriesData = [
             { name: 'General', icon: '📦' },
             { name: 'Vegetables', icon: '🥦' },
@@ -157,7 +456,6 @@ const UI = {
         const catInput = document.getElementById('input-category');
         const catText = document.getElementById('selected-category-text');
 
-        // Store icons for easy access during render
         this.categoryIcons = categoriesData.reduce((acc, curr) => {
             acc[curr.name] = curr.icon;
             return acc;
@@ -176,10 +474,9 @@ const UI = {
             };
             catGrid.appendChild(btn);
         });
-
         catBtn.addEventListener('click', () => this.openCategoryModal());
 
-        // Unit Selector Logic
+        // Unit Selector
         const units = ['nos', 'kg', 'g', 'L', 'ml', 'pack', 'jar', 'roll', 'bottle'];
         const unitGrid = document.getElementById('unit-grid');
         const unitBtn = document.getElementById('unit-selector-btn');
@@ -193,88 +490,305 @@ const UI = {
             btn.onclick = () => {
                 unitInput.value = u;
                 unitText.textContent = u;
-                document.querySelectorAll('.unit-option').forEach(el => el.classList.remove('active'));
+                document.querySelectorAll('#unit-grid .unit-option').forEach(el => el.classList.remove('active'));
                 btn.classList.add('active');
                 this.closeUnitModal();
             };
             unitGrid.appendChild(btn);
         });
-
         unitBtn.addEventListener('click', () => this.openUnitModal());
 
-        // Add Item Form
+        // Add/Edit Item Form
         document.getElementById('add-form').addEventListener('submit', (e) => {
             e.preventDefault();
-            const name = document.getElementById('input-name').value;
+            const name = document.getElementById('input-name').value.trim();
             const qty = document.getElementById('input-qty').value;
             const unit = document.getElementById('input-unit').value;
             const category = document.getElementById('input-category').value;
-            
-            if(name) {
+
+            if (name) {
                 if (this.editingItemId) {
                     Store.update(this.editingItemId, { name, quantity: qty, unit, category });
                 } else {
                     Store.add({ name, quantity: qty, unit, category });
                 }
-                
                 this.closeModal();
                 e.target.reset();
-                // Reset displays
                 unitInput.value = 'nos';
                 unitText.textContent = 'nos';
                 catInput.value = 'General';
                 catText.textContent = 'General';
-                this.switchTab('list');
+                this.render();
             }
+        });
+
+        // List Toolbar
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) searchInput.addEventListener('input', (e) => {
+            this.searchQuery = e.target.value.trim().toLowerCase();
+            this.render();
+        });
+
+        // Active list selector (Home)
+        const activeListBtn = document.getElementById('active-list-btn');
+        if (activeListBtn) activeListBtn.addEventListener('click', () => this.openListModal());
+
+        const newListBtn = document.getElementById('new-list-btn');
+        if (newListBtn) newListBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openNewListModal();
+        });
+
+        // Import file
+        const importFile = document.getElementById('import-file');
+        if (importFile) importFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) Store.importData(file);
+            e.target.value = '';
         });
 
         this.render();
         this.updateDashboard();
+        this.renderLists();
     },
 
-    openCategoryModal() {
-        document.getElementById('category-modal').classList.add('open');
+    /* --- Delete item --- */
+    deleteItem(id) {
+        const item = Store.getAll().find(i => i.id === id);
+        if (!item) return;
+        if (!confirm(`Delete "${item.name}"?`)) return;
+        Store.delete(id);
     },
 
-    closeCategoryModal() {
-        document.getElementById('category-modal').classList.remove('open');
+    /* --- Modals --- */
+    openCategoryModal() { document.getElementById('category-modal').classList.add('open'); },
+    closeCategoryModal() { document.getElementById('category-modal').classList.remove('open'); },
+
+    openThemeModal() { document.getElementById('theme-modal').classList.add('open'); },
+    closeThemeModal() { document.getElementById('theme-modal').classList.remove('open'); },
+
+    openUnitModal() { document.getElementById('unit-modal').classList.add('open'); },
+    closeUnitModal() { document.getElementById('unit-modal').classList.remove('open'); },
+
+    openListModal() {
+        this.renderListModal();
+        document.getElementById('list-modal').classList.add('open');
+    },
+    closeListModal() { document.getElementById('list-modal').classList.remove('open'); },
+
+    openNewListModal(editId) {
+        this.editingListId = editId || null;
+        const input = document.getElementById('input-list-name');
+        const title = document.getElementById('new-list-modal-title');
+        if (editId) {
+            const list = Store.getLists().find(l => l.id === editId);
+            title.textContent = 'Rename List';
+            if (list) input.value = list.name;
+        } else {
+            title.textContent = 'New List';
+            input.value = '';
+        }
+        document.getElementById('new-list-modal').classList.add('open');
+        setTimeout(() => input.focus(), 100);
+    },
+    closeNewListModal() { document.getElementById('new-list-modal').classList.remove('open'); },
+
+    saveListFromModal() {
+        const name = document.getElementById('input-list-name').value.trim();
+        if (this.editingListId) {
+            Store.renameList(this.editingListId, name);
+            this.editingListId = null;
+        } else {
+            Store.createList(name);
+        }
+        this.closeNewListModal();
     },
 
-    openThemeModal() {
-        const modal = document.getElementById('theme-modal');
-        if (modal) modal.classList.add('open');
+    createNewList() { this.openNewListModal(); },
+
+    renderListModal() {
+        const container = document.getElementById('list-modal-container');
+        if (!container) return;
+        container.innerHTML = '';
+        const lists = Store.getLists().filter(l => !l.archived);
+        const activeId = Store.getActiveListId();
+        lists.forEach(list => {
+            const row = document.createElement('div');
+            row.className = 'list-select-row' + (list.id === activeId ? ' active' : '');
+            row.innerHTML = `<span style="font-weight:700; flex:1;">${escapeHtml(list.name)}</span>`;
+            if (list.id === activeId) {
+                row.innerHTML += `<span class="active-badge">Current</span>`;
+            }
+            row.onclick = () => {
+                Store.setActiveList(list.id);
+                this.closeListModal();
+            };
+            container.appendChild(row);
+        });
     },
 
-    closeThemeModal() {
-        const modal = document.getElementById('theme-modal');
-        if (modal) modal.classList.remove('open');
+    /* --- Settings --- */
+    openSettings() {
+        this.renderLists();
+        this.refreshIcons();
+        document.getElementById('settings-modal').classList.add('open');
+    },
+    closeSettings() {
+        document.getElementById('settings-modal').classList.remove('open');
     },
 
-    openUnitModal() {
-        document.getElementById('unit-modal').classList.add('open');
+    /* --- Swipe actions --- */
+    deleteItemSwipe(id) {
+        const item = Store.getAll().find(i => i.id === id);
+        if (!item) return;
+        if (!confirm(`Delete "${item.name}"?`)) return;
+        Store.delete(id);
     },
 
-    closeUnitModal() {
-        document.getElementById('unit-modal').classList.remove('open');
+    attachGestures(swipeWrap, item) {
+        const content = swipeWrap.querySelector('.swipe-content');
+        const that = this;
+        if (!content) return;
+
+        const SWIPE_THRESHOLD = 80;
+        const MAX_DRAG = 60;
+
+        const resetVisual = () => {
+            content.style.transition = '';
+            content.style.transform = '';
+            content.style.background = '';
+        };
+
+        const applyFeedback = (dx) => {
+            const drag = Math.max(-MAX_DRAG, Math.min(MAX_DRAG, dx));
+            content.style.transition = 'none';
+            content.style.transform = `translateX(${drag}px)`;
+            content.style.background = dx < 0 ? 'rgba(217, 119, 6, 0.12)' : 'rgba(220, 38, 38, 0.12)';
+        };
+
+        const doFavorite = () => {
+            if (navigator.vibrate) navigator.vibrate(15);
+            Store.toggleFavorite(item.name, item.unit, item.category, item.quantity);
+            that.render();
+        };
+
+        const doDelete = () => {
+            if (navigator.vibrate) navigator.vibrate(20);
+            that.deleteItemSwipe(item.id);
+        };
+
+        // Desktop: right-click / long-press edit
+        content.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            that.openEditModal(item.id);
+        });
+
+        /* --- Hammer.js gesture handling --- */
+        if (window.Hammer) {
+            const mc = new Hammer.Manager(swipeWrap, {
+                touchAction: 'pan-y',
+                recognizers: [
+                    [Hammer.Pan, { direction: Hammer.DIRECTION_HORIZONTAL, threshold: 10 }],
+                    [Hammer.Tap, { time: 250 }],
+                    [Hammer.Press, { time: 500 }]
+                ]
+            });
+
+            mc.on('panmove', (e) => applyFeedback(e.deltaX));
+
+            mc.on('panend', (e) => {
+                resetVisual();
+                if (e.deltaX <= -SWIPE_THRESHOLD || e.velocityX < -0.6) doFavorite();
+                else if (e.deltaX >= SWIPE_THRESHOLD || e.velocityX > 0.6) doDelete();
+            });
+
+            mc.on('pancancel', resetVisual);
+
+            mc.on('tap', (e) => {
+                if (e.srcEvent.target.closest('button, select, input, a')) return;
+                Store.togglePurchased(item.id);
+            });
+
+            mc.on('press', (e) => {
+                if (e.srcEvent.target.closest('button, select, input, a')) return;
+                if (navigator.vibrate) navigator.vibrate(20);
+                that.openEditModal(item.id);
+            });
+
+            return;
+        }
+
+        /* --- Fallback (no Hammer): compact touch handling --- */
+        let startX = 0, startY = 0, startTarget = null;
+        let moved = false, vertical = false;
+        let longPressTimer = null;
+
+        content.addEventListener('touchstart', (e) => {
+            const t = e.touches[0];
+            startX = t.clientX;
+            startY = t.clientY;
+            startTarget = e.target;
+            moved = false;
+            vertical = false;
+
+            clearTimeout(longPressTimer);
+            if (!startTarget.closest('button, select, input, a')) {
+                longPressTimer = setTimeout(() => {
+                    if (!moved && !vertical) {
+                        if (navigator.vibrate) navigator.vibrate(20);
+                        that.openEditModal(item.id);
+                    }
+                }, 500);
+            }
+        }, { passive: true });
+
+        content.addEventListener('touchmove', (e) => {
+            const t = e.touches[0];
+            const dx = t.clientX - startX;
+            const dy = t.clientY - startY;
+            if (Math.abs(dy) > 15 && Math.abs(dy) > Math.abs(dx)) vertical = true;
+            if (vertical) return;
+            if (Math.abs(dx) > 8) { moved = true; clearTimeout(longPressTimer); }
+            applyFeedback(dx);
+        }, { passive: true });
+
+        content.addEventListener('touchend', (e) => {
+            clearTimeout(longPressTimer);
+            const t = e.changedTouches[0];
+            const dx = t.clientX - startX;
+            const dy = t.clientY - startY;
+            resetVisual();
+
+            if (vertical) return;
+
+            if (!moved) {
+                if (startTarget && startTarget.closest('button, select, input, a')) return;
+                // Tap: buy / unbuy
+                Store.togglePurchased(item.id);
+                return;
+            }
+
+            if (Math.abs(dx) < SWIPE_THRESHOLD || Math.abs(dy) > Math.abs(dx)) return;
+            if (dx < 0) doFavorite();
+            else doDelete();
+        }, { passive: true });
+
+        if (!('ontouchstart' in window)) {
+            // Desktop mouse-only: tap = buy/unbuy
+            content.addEventListener('click', (e) => {
+                if (e.target.closest('button, select, input, a')) return;
+                Store.togglePurchased(item.id);
+            });
+        }
     },
 
-    switchTab(tabId) {
-        // Hide all sections
-        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-        // Show target
-        document.getElementById(tabId).classList.add('active');
-        
-        // Update Nav State
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        document.querySelector(`.nav-item[data-target="${tabId}"]`).classList.add('active');
-    },
-
+    /* --- Add/Edit modal --- */
     openModal() {
         this.editingItemId = null;
         document.getElementById('modal-title').textContent = 'Add Item';
         document.getElementById('submit-btn-text').textContent = 'Save to List';
         document.getElementById('add-modal').classList.add('open');
-        document.getElementById('input-name').focus();
+        setTimeout(() => document.getElementById('input-name').focus(), 100);
     },
 
     openEditModal(id) {
@@ -284,14 +798,12 @@ const UI = {
         this.editingItemId = id;
         document.getElementById('modal-title').textContent = 'Edit Item';
         document.getElementById('submit-btn-text').textContent = 'Update Item';
-        
-        // Fill form
+
         document.getElementById('input-name').value = item.name;
         document.getElementById('input-qty').value = item.quantity;
         document.getElementById('input-unit').value = item.unit;
         document.getElementById('input-category').value = item.category;
-        
-        // Update UI displays for custom selectors
+
         document.getElementById('selected-unit-text').textContent = item.unit;
         const catIcon = this.categoryIcons[item.category] || '📦';
         document.getElementById('selected-category-text').textContent = `${catIcon} ${item.category}`;
@@ -303,25 +815,37 @@ const UI = {
         document.getElementById('add-modal').classList.remove('open');
     },
 
+    /* --- Render list --- */
     render() {
-        const items = Store.getAll();
         const listContainer = document.getElementById('grocery-items-container');
+        if (!listContainer) return;
+
+        let items = Store.getActiveItems();
+
+        if (this.searchQuery) {
+            items = items.filter(i => i.name.toLowerCase().includes(this.searchQuery));
+        }
+        if (this.hideBought) {
+            items = items.filter(i => !i.purchased);
+        }
+
         listContainer.innerHTML = '';
 
         if (items.length === 0) {
+            const isEmpty = !this.searchQuery && !this.hideBought;
+            const msg = this.searchQuery ? `No results for "${this.searchQuery}".` :
+                (this.hideBought ? 'Nothing left to buy in this list! 🎉' : 'Your list is empty.');
+            const hint = this.searchQuery || this.hideBought ? '' : 'Add your first grocery item to get started.';
             listContainer.innerHTML = `
-                <div style="text-align:center; padding: 60px 20px; color: var(--text-secondary);">
-                    <svg viewBox="0 0 24 24" width="64" height="64" stroke="currentColor" stroke-width="1" fill="none" style="opacity:0.3; margin-bottom:16px;">
-                        <circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle>
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                    </svg>
-                    <p style="font-size: 1.2rem; font-weight:600;">Your list is empty</p>
-                    <p style="font-size: 0.9rem;">Tap the + button to add groceries.</p>
+                <div class="empty-state">
+                    <i data-lucide="shopping-cart" width="64" height="64" style="opacity:0.3; margin-bottom:16px;"></i>
+                    <p style="font-size: 1.2rem; font-weight:600; margin:0;">${escapeHtml(msg)}</p>
+                    <p style="font-size: 0.9rem; margin:4px 0 0 0;">${escapeHtml(hint)}</p>
+                    ${isEmpty ? `<button class="btn-block empty-cta" onclick="UI.openModal()">+ Add Your First Item</button>` : ''}
                 </div>`;
             return;
         }
 
-        // Group items by category
         const groups = items.reduce((acc, item) => {
             const cat = item.category || 'General';
             if (!acc[cat]) acc[cat] = [];
@@ -329,114 +853,188 @@ const UI = {
             return acc;
         }, {});
 
-        // Sort categories (General last)
         const sortedCats = Object.keys(groups).sort((a, b) => {
             if (a === 'General') return 1;
             if (b === 'General') return -1;
+            // Categories with all items purchased sink to the bottom
+            const aDone = groups[a].every(i => i.purchased) ? 1 : 0;
+            const bDone = groups[b].every(i => i.purchased) ? 1 : 0;
+            if (aDone !== bDone) return aDone - bDone;
             return a.localeCompare(b);
         });
 
+        const printMeta = document.getElementById('print-meta');
+        if (printMeta) {
+            const activeCount = items.filter(i => !i.purchased).length;
+            const activeList = (typeof Store !== 'undefined' && typeof Store.getActiveList === 'function')
+                ? Store.getActiveList() : null;
+            const listName = activeList ? activeList.name : '';
+            printMeta.innerHTML = `${escapeHtml(listName)}<br>${new Date().toLocaleDateString()} — ${activeCount} item${activeCount === 1 ? '' : 's'}`;
+        }
+
         sortedCats.forEach(cat => {
-            // Category Header
             const header = document.createElement('div');
             header.className = 'category-header';
             const icon = this.categoryIcons[cat] || '📦';
+            const done = groups[cat].filter(i => i.purchased).length;
             header.innerHTML = `
                 <div class="category-icon">${icon}</div>
                 <span>${cat}</span>
+                <span class="category-count">${done}/${groups[cat].length}</span>
             `;
             listContainer.appendChild(header);
 
-            // Category Items
-            groups[cat].forEach((item, index) => {
-                const card = document.createElement('div');
-                card.className = `card ${item.purchased ? 'purchased' : ''}`;
-                // Staggered Animation
-                card.style.animation = `fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards`;
-                card.style.animationDelay = `${index * 0.05}s`;
-                card.style.opacity = '0'; // Start hidden
-                
-                card.innerHTML = `
-                    <div class="item-checkbox" onclick="Store.togglePurchased('${item.id}')"></div>
-                    <div class="item-info" onclick="Store.togglePurchased('${item.id}')">
-                        <span class="item-name">${item.name}</span>
-                        <span class="item-details">${item.quantity} ${item.unit}</span>
-                    </div>
-                    <div class="item-actions">
-                        <button class="btn-icon" onclick="event.stopPropagation(); UI.openEditModal('${item.id}')">
-                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                        </button>
-                        <button class="btn-icon delete" onclick="event.stopPropagation(); Store.delete('${item.id}')">
-                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                        </button>
-                    </div>
-                `;
+            // Purchased items sink to the bottom of their category
+            const sorted = [...groups[cat]].sort((a, b) => (a.purchased ? 1 : 0) - (b.purchased ? 1 : 0));
+            sorted.forEach((item, index) => {
+                const card = this.buildItemCard(item, index);
                 listContainer.appendChild(card);
             });
         });
+
+        this.refreshIcons();
     },
 
+    refreshIcons() {
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+            window.lucide.createIcons();
+        }
+    },
+
+    buildItemCard(item, index) {
+        const wrap = document.createElement('div');
+        wrap.className = 'swipe-wrap';
+        wrap.style.animation = `fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards`;
+        wrap.style.animationDelay = `${index * 0.03}s`;
+        wrap.style.opacity = '0';
+
+        const isFav = Store.isFavorite(item.name);
+
+        wrap.innerHTML = `
+            <div class="swipe-content card ${item.purchased ? 'purchased' : ''}${isFav ? ' fav' : ''}">
+                <div class="item-info">
+                    <span class="item-name">${escapeHtml(item.name)}</span>
+                    <span class="item-details">${escapeHtml(String(item.quantity))} ${escapeHtml(item.unit)}</span>
+                    <span class="item-flags">
+                        ${isFav ? '<i data-lucide="heart" width="16" height="16" class="icon-heart"></i>' : ''}
+                        ${item.purchased ? '<i data-lucide="zap" width="16" height="16" class="icon-bolt"></i>' : ''}
+                    </span>
+                </div>
+            </div>
+        `;
+
+        this.attachGestures(wrap, item);
+        return wrap;
+    },
+
+    /* --- Dashboard --- */
     updateDashboard() {
-        const items = Store.getAll();
+        const items = Store.getActiveItems();
         const total = items.length;
         const bought = items.filter(i => i.purchased).length;
         const pending = total - bought;
 
-        const totalEl = document.getElementById('stat-total');
         const pendingEl = document.getElementById('stat-pending');
-        const purchasedEl = document.getElementById('stat-purchased');
-        
-        // Update numbers
-        if (totalEl) totalEl.textContent = total;
         if (pendingEl) pendingEl.textContent = pending;
-        if (purchasedEl) purchasedEl.textContent = bought;
-        
-        // Populate "Items to Buy" (Quick Mark)
-        const dashboardContainer = document.getElementById('dashboard-list-items');
-        if (!dashboardContainer) return;
-        
-        dashboardContainer.innerHTML = '';
-        const pendingItems = items.filter(i => !i.purchased);
-        
-        if (pendingItems.length === 0) {
-            dashboardContainer.innerHTML = `
-                <div class="card" style="justify-content:center; padding: 30px; border-style: dashed;">
-                    <p style="color:var(--text-secondary); font-size:1rem; font-weight:600; margin:0;">All items purchased! 🎉</p>
-                </div>`;
-        } else {
-            pendingItems.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                card.style.marginBottom = '8px';
-                card.style.padding = '14px 18px';
-                const catIcon = this.categoryIcons[item.category] || '📦';
-                card.innerHTML = `
-                    <div class="item-checkbox" onclick="Store.togglePurchased('${item.id}')"></div>
-                    <div class="item-info" onclick="Store.togglePurchased('${item.id}')">
-                        <span class="item-name" style="font-size:1.1rem">${item.name}</span>
-                        <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
-                            <span class="item-details">${item.quantity} ${item.unit}</span>
-                            <span class="home-cat-badge">${catIcon} ${item.category}</span>
-                        </div>
+
+        const ringFill = document.getElementById('ring-fill');
+        if (ringFill) {
+            const C = 2 * Math.PI * 60; // circumference of r=60 ring (~377)
+            const pct = total > 0 ? bought / total : 0;
+            ringFill.style.strokeDashoffset = String(C * (1 - pct));
+        }
+
+        const listNameEl = document.getElementById('active-list-text');
+        const activeList = Store.getActiveList();
+        if (listNameEl) listNameEl.textContent = activeList ? activeList.name : 'My List';
+    },
+
+    /* --- Lists rendering (Settings) --- */
+    renderLists() {
+        const container = document.getElementById('settings-lists-container');
+        if (!container) return;
+        container.innerHTML = '';
+        const lists = Store.getLists();
+        const activeId = Store.getActiveListId();
+        const archived = lists.filter(l => l.archived);
+        const active = lists.filter(l => !l.archived);
+
+        active.forEach(list => {
+            const count = Store.getAll().filter(i => i.listId === list.id).length;
+            const pend = Store.getAll().filter(i => i.listId === list.id && !i.purchased).length;
+            const isActive = list.id === activeId;
+            const row = document.createElement('div');
+            row.className = 'list-row' + (isActive ? ' active' : '');
+            row.innerHTML = `
+                <div style="flex:1; min-width:0;">
+                    <div style="font-weight:700;">${escapeHtml(list.name)} ${isActive ? '<span class="active-badge">Active</span>' : ''}</div>
+                    <div style="font-size:0.8rem; color:var(--text-secondary);">${count} items · ${pend} pending</div>
+                </div>
+                <div style="display:flex; gap:4px; flex-shrink:0;">
+                    <button class="btn-icon" title="Set active" onclick="Store.setActiveList('${list.id}')">
+                        <i data-lucide="check" width="18" height="18"></i>
+                    </button>
+                    <button class="btn-icon" title="Rename" onclick="UI.openNewListModal('${list.id}')">
+                        <i data-lucide="pencil" width="18" height="18"></i>
+                    </button>
+                    <button class="btn-icon" title="Archive to history" onclick="Store.archiveList('${list.id}')">
+                        <i data-lucide="archive" width="18" height="18"></i>
+                    </button>
+                    <button class="btn-icon delete" title="Delete" onclick="Store.deleteList('${list.id}')">
+                        <i data-lucide="trash-2" width="18" height="18"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+
+        if (archived.length) {
+            const hist = document.createElement('div');
+            hist.style.marginTop = '16px';
+            hist.innerHTML = `<div class="category-header"><div class="category-icon">🕘</div><span>History (Archived)</span></div>`;
+            container.appendChild(hist);
+            archived.forEach(list => {
+                const count = Store.getAll().filter(i => i.listId === list.id).length;
+                const row = document.createElement('div');
+                row.className = 'list-row archived';
+                row.innerHTML = `
+                    <div style="flex:1; min-width:0;">
+                        <div style="font-weight:700; color:var(--text-secondary);">${escapeHtml(list.name)}</div>
+                        <div style="font-size:0.8rem; color:var(--text-secondary);">${count} items</div>
                     </div>
+                    <button class="btn-icon delete" title="Delete history" onclick="Store.deleteList('${list.id}')">
+                        <i data-lucide="trash-2" width="18" height="18"></i>
+                    </button>
                 `;
-                dashboardContainer.appendChild(card);
+                container.appendChild(row);
             });
         }
-    }
+
+        this.refreshIcons();
+    },
+
+    /* --- Export / Import --- */
+    exportData() { Store.exportData(); }
 };
+
+/* --- Helpers --- */
+function escapeHtml(str) {
+    return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
 
 /* --- APP CONTROLLER --- */
 window.addEventListener('DOMContentLoaded', () => {
     Theme.init();
-    // Load external data if available
     if (typeof predefinedItems !== 'undefined') {
         Store.initData(predefinedItems);
     }
 
     UI.init();
 
-    // Offline Status
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
     updateOnlineStatus();
@@ -450,11 +1048,9 @@ function updateOnlineStatus() {
     }
 }
 
-// Service Worker Registration
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('SW Registered'))
-            .catch(err => console.log('SW Fail', err));
+            .catch(() => {});
     });
 }

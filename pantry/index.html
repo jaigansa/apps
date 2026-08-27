@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pantry</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Pantry · Grocery List</title>
     <meta name="theme-color" content="#2E7D32">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/style.css">
@@ -14,173 +14,191 @@
 
     <!-- Header -->
     <header class="no-print">
-        <h1>🛒 Grocery List</h1>
-        <!-- Settings/Menu button could go here for desktop -->
+        <div>
+            <h1>🛒 Pantry</h1>
+        </div>
+        <div class="header-actions">
+            <div class="header-list-pill" id="active-list-btn" role="button" tabindex="0" aria-label="Select active list">
+                <button type="button" class="header-list-name-btn" aria-label="Select active list">
+                    <span class="header-list-name" id="active-list-text">My List</span>
+                    <i data-lucide="chevron-down" width="16" height="16"></i>
+                </button>
+                <span class="header-pill-divider" aria-hidden="true"></span>
+                <button type="button" id="new-list-btn" class="header-pill-plus" aria-label="New list">
+                    <i data-lucide="plus" width="16" height="16"></i>
+                </button>
+            </div>
+            <button type="button" id="settings-btn" class="header-icon-btn" aria-label="Settings">
+                <i data-lucide="settings" width="22" height="22"></i>
+            </button>
+        </div>
     </header>
 
     <div class="app-container">
-        
-        <!-- SECTION: DASHBOARD -->
-        <div id="home" class="section active">
-            <div style="margin-bottom: 24px;">
-                <h2 style="margin: 0; font-size: 1.8rem; font-weight: 800;">Welcome back! 👋</h2>
-                <p style="color: var(--text-secondary); margin: 4px 0 0 0; font-weight: 600;">Here's your grocery status.</p>
-            </div>
 
-            <div class="summary-grid">
-                <div class="summary-card">
-                    <span id="stat-total" class="summary-value">0</span>
-                    <span class="summary-label">Total</span>
-                </div>
-                <div class="summary-card highlight">
-                    <span id="stat-pending" class="summary-value">0</span>
-                    <span class="summary-label">Pending</span>
-                </div>
-                <div class="summary-card">
-                    <span id="stat-purchased" class="summary-value" style="color: var(--primary-color)">0</span>
-                    <span class="summary-label">Bought</span>
+        <!-- SECTION: HOME (single window) -->
+        <section id="home" class="section active">
+            <!-- Progress Summary -->
+            <div class="summary-outline mb-20">
+                <div class="progress-ring" id="progress-ring" role="img" aria-label="Progress">
+                    <svg width="140" height="140" viewBox="0 0 140 140">
+                        <circle class="ring-bg" cx="70" cy="70" r="60"></circle>
+                        <circle class="ring-fill" id="ring-fill" cx="70" cy="70" r="60"></circle>
+                    </svg>
+                    <div class="ring-center">
+                        <span id="stat-pending" class="ring-count">0</span>
+                        <span class="ring-label">Pending</span>
+                    </div>
                 </div>
             </div>
 
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="margin: 0; font-size: 1.2rem; font-weight: 700;">Items to Buy</h3>
-                <button onclick="UI.switchTab('list')" style="background:none; border:none; color:var(--primary-color); font-weight:700; cursor:pointer;">Edit List</button>
+            <!-- List Toolbar: Search / Hide Bought / Print -->
+            <div class="list-toolbar mb-16">
+                <div class="search-wrap">
+                    <i data-lucide="search" width="18" height="18"></i>
+                    <input type="text" id="search-input" class="form-control" placeholder="Search items...">
+                    <button type="button" id="search-clear" class="search-clear" aria-label="Clear search">
+                        <i data-lucide="x" width="16" height="16"></i>
+                    </button>
+                </div>
+                <div class="flex gap-10" style="margin-top:10px; align-items:center;">
+                </div>
             </div>
-            
-            <div id="dashboard-list-items" style="display:flex; flex-direction:column; gap:8px;">
-                <!-- Interactive mark-only items injected here -->
-            </div>
-        </div>
 
-        <!-- SECTION: LIST -->
-        <div id="list" class="section">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-                <h2 style="margin: 0; font-size: 1.5rem; font-weight: 800;">Your List</h2>
-                <button class="btn-icon" onclick="window.print()" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 12px; display: flex; align-items: center; gap: 8px; color: var(--text-main); font-weight: 700; cursor: pointer;">
-                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                    Print
-                </button>
-            </div>
+            <div id="print-meta" style="display:none;"></div>
             <div id="grocery-items-container">
                 <!-- Items injected here via JS -->
             </div>
-            <div style="height: 80px;"></div> <!-- Spacer for FAB -->
-        </div>
 
-        <!-- SECTION: SETTINGS -->
-        <div id="settings" class="section">
-            <h2 style="margin-bottom: 24px; font-size: 1.5rem; font-weight: 800;">Settings</h2>
-            
-            <div class="card" style="display: block; padding: 20px;">
-                <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; font-weight: 700;">Appearance</h3>
-                
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="height: 24px;"></div>
+        </section>
+
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay flex-center">
+        <div class="modal-content settings-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <button class="modal-close" onclick="UI.closeSettings()" aria-label="Close settings">
+                    <i data-lucide="x" width="20" height="20"></i>
+                </button>
+            </div>
+
+            <div class="card flex-col" style="display:block; padding:20px;">
+                <h3 class="card-title">Appearance</h3>
+                <div class="setting-row">
                     <div>
-                        <span style="font-weight: 700; display: block;">Theme</span>
-                        <span style="font-size: 0.85rem; color: var(--text-secondary);">Choose your preferred look</span>
+                        <span class="setting-label">Theme</span>
+                        <span class="card-sub">Choose your preferred look</span>
                     </div>
-                    <button type="button" id="theme-selector-btn" class="form-control" style="width: 130px; padding: 10px; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer;">
+                    <button type="button" id="theme-selector-btn" class="form-control flex flex-between" style="width:150px; padding:10px 12px; font-size:0.9rem; cursor:pointer; align-items:center;">
                         <span id="selected-theme-text">System</span>
-                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        <i data-lucide="chevron-down" width="16" height="16" style="flex-shrink:0;"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- ... existing data management card ... -->
-            <div class="card" style="display: block; padding: 20px;">
-                <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; font-weight: 700;">Data Management</h3>
-                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">These actions are permanent and cannot be undone.</p>
-                
-                <button class="btn-block" style="background-color: var(--bg-color); color: var(--danger-color); border: 1px solid var(--border-color); box-shadow: none; font-size: 1rem;" onclick="Store.clearAll()">
+            <div class="card flex-col" style="display:block; padding:20px;">
+                <h3 class="card-title">Data Management</h3>
+                <p class="card-sub mb-16">Backup your data or take bulk actions.</p>
+
+                <div class="flex gap-10 mb-12">
+                    <button class="btn-block flex-1" style="padding:12px; box-shadow:none;" onclick="UI.exportData()">
+                        Export
+                    </button>
+                    <button class="btn-block flex-1 btn-secondary" style="padding:12px;" onclick="document.getElementById('import-file').click()">
+                        Import
+                    </button>
+                    <input type="file" id="import-file" accept="application/json,.json" style="display:none;">
+                </div>
+
+                <button class="btn-block btn-accent-ghost mb-12" style="font-size:1rem;" onclick="Store.clearPurchased()">
+                    Clear Purchased Items
+                </button>
+
+                <button class="btn-block btn-danger-ghost" style="font-size:1rem;" onclick="Store.clearAll()">
                     Clear All Grocery Data
                 </button>
             </div>
 
-            <div style="text-align: center; margin-top: 32px; color: var(--text-secondary);">
-                <p style="font-size: 0.85rem; font-weight: 600;">Grocery App v1.2.0</p>
-                <p style="font-size: 0.75rem;">Professionally Redesigned</p>
+            <div class="card flex-col" style="display:block; padding:20px;">
+                <h3 class="card-title">Lists</h3>
+                <p class="card-sub mb-16">Manage your grocery lists. Use the buttons to switch, rename, archive or remove.</p>
+                <div id="settings-lists-container" class="flex-col gap-8">
+                    <!-- Lists injected here -->
+                </div>
+                <button class="btn-block btn-soft mt-12" style="font-size:1rem; padding:12px;" onclick="UI.createNewList()">
+                    + New List
+                </button>
+            </div>
+
+            <div class="text-center mt-32 text-secondary">
+                <p class="fs-sm fw-700" style="margin:0;">Grocery App v2.0.0</p>
+                <p class="fs-xss">Multi-list · Favorites · Search · Gestures · Backup</p>
             </div>
         </div>
-
     </div>
 
     <!-- Theme Selector Modal -->
-    <div id="theme-modal" class="modal-overlay" style="align-items: center; justify-content: center;">
-        <div class="modal-content" style="width: 90%; max-width: 350px; border-radius: var(--radius-lg); transform: scale(0.9); padding: 24px;">
-            <h3 style="margin: 0 0 20px 0; text-align: center; font-size: 1.3rem;">Select Theme</h3>
-            <div class="unit-grid" id="theme-grid" style="grid-template-columns: repeat(1, 1fr);">
-                <div class="unit-option" onclick="Theme.apply('light'); UI.closeThemeModal();" style="flex-direction: row; justify-content: flex-start; gap: 15px; padding: 18px;">
+    <div id="theme-modal" class="modal-overlay flex-center">
+        <div class="modal-content" style="width:90%; max-width:350px; border-radius:var(--radius-lg); transform:scale(0.9); padding:24px;">
+            <h3 style="margin:0 0 20px 0; text-align:center; font-size:1.3rem;">Select Theme</h3>
+            <div class="unit-grid" id="theme-grid" style="grid-template-columns:repeat(1, 1fr);">
+                <div class="unit-option" onclick="Theme.apply('light'); UI.closeThemeModal();" style="flex-direction:row; justify-content:flex-start; gap:15px; padding:18px;">
                     <span class="emoji">☀️</span> <span>Light Mode</span>
                 </div>
-                <div class="unit-option" onclick="Theme.apply('dark'); UI.closeThemeModal();" style="flex-direction: row; justify-content: flex-start; gap: 15px; padding: 18px;">
+                <div class="unit-option" onclick="Theme.apply('dark'); UI.closeThemeModal();" style="flex-direction:row; justify-content:flex-start; gap:15px; padding:18px;">
                     <span class="emoji">🌙</span> <span>Dark Mode</span>
                 </div>
             </div>
-            <button type="button" class="btn-block" style="margin-top: 20px; background: var(--bg-color); color: var(--text-main); box-shadow: none; padding: 12px;" onclick="UI.closeThemeModal()">Cancel</button>
+            <button type="button" class="btn-block modal-cancel" onclick="UI.closeThemeModal()">Cancel</button>
         </div>
     </div>
 
     <!-- FAB (Floating Action Button) -->
     <button id="fab-add" class="fab no-print" aria-label="Add Item">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <i data-lucide="plus" width="24" height="24"></i>
     </button>
-
-    <!-- Bottom Navigation -->
-    <nav class="bottom-nav no-print">
-        <button class="nav-item active" data-target="home">
-            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-            Home
-        </button>
-        <button class="nav-item" data-target="list">
-            <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
-            List
-        </button>
-        <button class="nav-item" data-target="settings">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-            Settings
-        </button>
-    </nav>
 
     <!-- Add Item Modal -->
     <div id="add-modal" class="modal-overlay">
         <div class="modal-content">
             <!-- Mobile Handle Bar -->
-            <div style="width: 40px; height: 5px; background: var(--border-color); border-radius: 10px; margin: -10px auto 20px auto;"></div>
+            <div class="modal-handle"></div>
             
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-                <h2 id="modal-title" style="margin:0; font-size: 1.5rem; font-weight: 800;">Add Item</h2>
-                <button onclick="UI.closeModal()" style="background:var(--bg-color); border:none; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; color:var(--text-secondary); cursor:pointer;">
-                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="3" fill="none"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            <div class="modal-header">
+                <h2 id="modal-title">Add Item</h2>
+                <button class="modal-close" onclick="UI.closeModal()" aria-label="Close">
+                    <i data-lucide="x" width="20" height="20"></i>
                 </button>
             </div>
 
             <form id="add-form">
-                <!-- ... existing form fields ... -->
                 <div class="form-group">
                     <label>What do you need?</label>
                     <input type="text" id="input-name" class="form-control" placeholder="e.g. Fresh Milk" required>
                 </div>
-                <!-- ... category select already updated above ... -->
 
                 <div class="form-group" id="cat-group-wrapper">
                     <label>Category</label>
-                    <button type="button" id="category-selector-btn" class="form-control" style="text-align: left; background-color: var(--bg-color); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                    <button type="button" id="category-selector-btn" class="form-control flex flex-between" style="text-align:left; background-color:var(--bg-color); cursor:pointer; align-items:center;">
                         <span id="selected-category-text">General</span>
-                        <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                        <i data-lucide="chevron-down" width="20" height="20" style="flex-shrink:0;"></i>
                     </button>
                     <input type="hidden" id="input-category" value="General">
                 </div>
                 
-                <div style="display:flex; gap:16px;">
-                    <div class="form-group" style="flex: 1.2">
+                <div class="flex gap-16">
+                    <div class="form-group flex-1" style="flex:1.2;">
                         <label>Quantity</label>
                         <input type="number" id="input-qty" class="form-control" value="1" min="1">
                     </div>
-                    <div class="form-group" style="flex: 1">
+                    <div class="form-group flex-1">
                         <label>Unit</label>
-                        <button type="button" id="unit-selector-btn" class="form-control" style="text-align: left; background-color: var(--bg-color); cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                        <button type="button" id="unit-selector-btn" class="form-control flex flex-between" style="text-align:left; background-color:var(--bg-color); cursor:pointer; align-items:center;">
                             <span id="selected-unit-text">nos</span>
-                            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                            <i data-lucide="chevron-down" width="20" height="20" style="flex-shrink:0;"></i>
                         </button>
                         <input type="hidden" id="input-unit" value="nos">
                     </div>
@@ -192,35 +210,55 @@
     </div>
 
     <!-- Category Selector Modal (Center Grid) -->
-    <div id="category-modal" class="modal-overlay" style="align-items: center; justify-content: center;">
-        <div class="modal-content" style="width: 90%; max-width: 400px; border-radius: var(--radius-lg); transform: scale(0.9); padding: 24px;">
-            <h3 style="margin: 0 0 20px 0; text-align: center; font-size: 1.3rem;">Select Category</h3>
-            <div class="unit-grid" id="category-grid" style="grid-template-columns: repeat(2, 1fr);">
+    <div id="category-modal" class="modal-overlay flex-center">
+        <div class="modal-content" style="width:90%; max-width:400px; border-radius:var(--radius-lg); transform:scale(0.9); padding:24px;">
+            <h3 style="margin:0 0 20px 0; text-align:center; font-size:1.3rem;">Select Category</h3>
+            <div class="unit-grid" id="category-grid" style="grid-template-columns:repeat(2, 1fr);">
                 <!-- Category options will be injected here -->
             </div>
-            <button type="button" class="btn-block" style="margin-top: 20px; background: var(--bg-color); color: var(--text-main); box-shadow: none; padding: 12px;" onclick="UI.closeCategoryModal()">Cancel</button>
+            <button type="button" class="btn-block modal-cancel" onclick="UI.closeCategoryModal()">Cancel</button>
         </div>
     </div>
 
     <!-- Unit Selector Modal (Center Grid) -->
-    <div id="unit-modal" class="modal-overlay" style="align-items: center; justify-content: center;">
-        <div class="modal-content" style="width: 90%; max-width: 350px; border-radius: var(--radius-lg); transform: scale(0.9); padding: 24px;">
-            <h3 style="margin: 0 0 20px 0; text-align: center; font-size: 1.3rem;">Select Unit</h3>
+    <div id="unit-modal" class="modal-overlay flex-center">
+        <div class="modal-content" style="width:90%; max-width:350px; border-radius:var(--radius-lg); transform:scale(0.9); padding:24px;">
+            <h3 style="margin:0 0 20px 0; text-align:center; font-size:1.3rem;">Select Unit</h3>
             <div class="unit-grid" id="unit-grid">
                 <!-- Unit options will be injected here -->
             </div>
-            <button type="button" class="btn-block" style="margin-top: 20px; background: var(--bg-color); color: var(--text-main); box-shadow: none; padding: 12px;" onclick="UI.closeUnitModal()">Cancel</button>
+            <button type="button" class="btn-block modal-cancel" onclick="UI.closeUnitModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- List Selector Modal -->
+    <div id="list-modal" class="modal-overlay flex-center">
+        <div class="modal-content" style="width:90%; max-width:380px; border-radius:var(--radius-lg); transform:scale(0.9); padding:24px;">
+            <h3 style="margin:0 0 20px 0; text-align:center; font-size:1.3rem;">Select List</h3>
+            <div id="list-modal-container" class="flex-col gap-10">
+                <!-- Lists injected here -->
+            </div>
+            <button type="button" class="btn-block modal-cancel" onclick="UI.closeListModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- New/Edit List Modal -->
+    <div id="new-list-modal" class="modal-overlay flex-center">
+        <div class="modal-content" style="width:90%; max-width:350px; border-radius:var(--radius-lg); transform:scale(0.9); padding:24px;">
+            <h3 id="new-list-modal-title" style="margin:0 0 20px 0; text-align:center; font-size:1.3rem;">New List</h3>
+            <div class="form-group mb-16">
+                <label>List Name</label>
+                <input type="text" id="input-list-name" class="form-control" placeholder="e.g. Weekly Groceries" autocomplete="off">
+            </div>
+            <button type="button" class="btn-block" onclick="UI.saveListFromModal()">Save</button>
+            <button type="button" class="btn-block modal-cancel" onclick="UI.closeNewListModal()">Cancel</button>
         </div>
     </div>
 
     <!-- Scripts -->
+    <script src="js/lucide.min.js"></script>
+    <script src="js/hammer.min.js"></script>
     <script src="js/data.js"></script>
     <script src="js/app.js"></script>
-<a href="../index.html" style="position: fixed; bottom: 20px; left: 20px; width: 48px; height: 48px; background-color: rgba(30, 41, 59, 0.85); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3); backdrop-filter: blur(4px); transition: transform 0.2s;">
-  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-  </svg>
-</a>
 </body>
 </html>
