@@ -1,7 +1,70 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#2E7D32" rx="100" ry="100"/>
-  <path d="M150 150 L362 150 L362 362 L150 362 Z" fill="none" stroke="white" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M200 200 L312 200" stroke="white" stroke-width="40" stroke-linecap="round"/>
-  <path d="M200 280 L312 280" stroke="white" stroke-width="40" stroke-linecap="round"/>
-  <circle cx="150" cy="100" r="30" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0A3A19" />
+      <stop offset="45%" stop-color="#1B6029" />
+      <stop offset="100%" stop-color="#2E7D32" />
+    </linearGradient>
+
+    <!-- Border Glow -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.05" />
+    </linearGradient>
+
+    <!-- Emblem Shadow -->
+    <filter id="dropShadow" x="-10%" y="-10%" width="125%" height="125%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000000" flood-opacity="0.35" />
+    </filter>
+
+    <!-- Badge Gold Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF176" />
+      <stop offset="100%" stop-color="#F57F17" />
+    </linearGradient>
+
+    <!-- Basket Body Gradient -->
+    <linearGradient id="basketGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#F0F4F1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Squircle -->
+  <rect width="512" height="512" rx="112" ry="112" fill="url(#bgGrad)" />
+
+  <!-- Glass Inner Highlight -->
+  <rect x="6" y="6" width="500" height="500" rx="106" ry="106" fill="none" stroke="url(#borderGrad)" stroke-width="3" />
+
+  <!-- Main Emblem Group with Shadow -->
+  <g filter="url(#dropShadow)">
+    <!-- Basket Arch Handle -->
+    <path d="M192 195 C192 120, 320 120, 320 195" fill="none" stroke="#FFFFFF" stroke-width="26" stroke-linecap="round" />
+
+    <!-- Basket Body -->
+    <path d="M124 195 C124 185, 132 178, 142 178 H370 C380 178, 388 185, 388 195 L366 392 C363 418, 341 438, 315 438 H197 C171 438, 149 418, 146 392 Z" fill="url(#basketGrad)" />
+
+    <!-- Basket Horizontal Weave Lines / Grill Accent -->
+    <rect x="165" y="228" width="182" height="12" rx="6" fill="#1B6029" opacity="0.85" />
+    <rect x="180" y="260" width="152" height="12" rx="6" fill="#1B6029" opacity="0.85" />
+
+    <!-- Checklist Items / Bullet Accents -->
+    <circle cx="200" cy="315" r="12" fill="#2E7D32" />
+    <rect x="228" y="309" width="90" height="12" rx="6" fill="#2E7D32" />
+
+    <circle cx="200" cy="355" r="12" fill="#2E7D32" />
+    <circle cx="230" cy="355" r="12" fill="#2E7D32" />
+    <rect x="258" y="349" width="60" height="12" rx="6" fill="#2E7D32" />
+
+    <circle cx="200" cy="395" r="10" fill="#2E7D32" opacity="0.6" />
+    <rect x="225" y="390" width="70" height="10" rx="5" fill="#2E7D32" opacity="0.6" />
+
+    <!-- Pro Star/Sparkle Badge -->
+    <g transform="translate(355, 155)">
+      <circle cx="0" cy="0" r="38" fill="url(#goldGrad)" stroke="#FFFFFF" stroke-width="6" />
+      <!-- Star Icon inside Badge -->
+      <path d="M0 -20 L5 -7 L19 -5 L9 5 L12 19 L0 11 L-12 19 L-9 5 L-19 -5 L-5 -7 Z" fill="#FFFFFF" />
+    </g>
+  </g>
 </svg>

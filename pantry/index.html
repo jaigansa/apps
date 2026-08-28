@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Pantry · Grocery List</title>
-    <meta name="theme-color" content="#2E7D32">
+    <title>Pantry Pro · Grocery List</title>
+    <meta name="theme-color" content="#1B6029">
     <link rel="manifest" href="manifest.json">
     <script>
         // Apply the saved theme before first paint to avoid a color/border flash on load.
@@ -35,7 +35,10 @@
     <!-- Header -->
     <header class="no-print">
         <div>
-            <h1 id="header-title">🛒 Pantry</h1>
+            <h1 id="header-title" class="flex items-center gap-8">
+                <img src="assets/icon.svg" width="28" height="28" style="border-radius: 6px; flex-shrink: 0;" alt="Pantry Pro Logo">
+                <span>Pantry Pro</span>
+            </h1>
         </div>
         <div class="header-actions">
             <button type="button" id="share-btn" class="header-icon-btn" aria-label="Share active list">
@@ -176,7 +179,7 @@
             </div>
 
             <div class="text-center mt-32 text-secondary">
-                <p class="fs-sm fw-700" style="margin:0;">Grocery App v2.0.0</p>
+                <p class="fs-sm fw-700" style="margin:0;">Pantry Pro v2.5.0</p>
                 <p class="fs-xss">Multi-list · Favorites · Search · Gestures · Backup</p>
                 <button type="button" class="doc-link" onclick="UI.openDocsModal()">
                     <i data-lucide="book-open" width="15" height="15"></i> Documentation

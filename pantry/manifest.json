@@ -1,10 +1,10 @@
 {
-  "name": "Tamil Grocery List",
-  "short_name": "Grocery",
+  "name": "Pantry Pro · Grocery List",
+  "short_name": "Pantry Pro",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#F5F7FA",
-  "theme_color": "#2E7D32",
+  "theme_color": "#1B6029",
   "orientation": "portrait-primary",
   "icons": [
     {
