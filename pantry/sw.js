@@ -1,8 +1,10 @@
-const CACHE_NAME = 'grocery-app-v1';
+const CACHE_NAME = 'grocery-app-v3';
 const ASSETS = [
   './',
   './index.html',
   './css/style.css',
+  './js/lucide.min.js',
+  './js/hammer.min.js',
   './js/app.js',
   './js/data.js', // Renaming list_data.js to data.js or just keeping it
   './manifest.json',
