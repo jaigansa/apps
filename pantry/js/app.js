@@ -307,7 +307,7 @@ const Store = {
                 UI.renderLists();
             });
         } else {
-            Confirm.open(`Delete "${list.name}" and all its items?`, { title: 'Delete List', okText: `Delete ${list.name}` }).then((ok) => {
+            Confirm.open(`Delete "${list.name}" and all its items?`, { title: 'Delete List', okText: 'Delete' }).then((ok) => {
                 if (!ok) return;
                 const d = this.getDB();
                 d.lists = d.lists.filter(l => l.id !== id);
@@ -612,7 +612,7 @@ const UI = {
     deleteItem(id) {
         const item = Store.getAll().find(i => i.id === id);
         if (!item) return;
-        Confirm.open(`Delete "${item.name}"?`, { title: 'Delete Item', okText: `Delete ${item.name}` }).then((ok) => {
+        Confirm.open(`Delete "${item.name}"?`, { title: 'Delete Item', okText: 'Delete' }).then((ok) => {
             if (!ok) return;
             Store.delete(id);
         });
@@ -699,7 +699,7 @@ const UI = {
     deleteItemSwipe(id) {
         const item = Store.getAll().find(i => i.id === id);
         if (!item) return;
-        Confirm.open(`Delete "${item.name}"?`, { title: 'Delete Item', okText: `Delete ${item.name}` }).then((ok) => {
+        Confirm.open(`Delete "${item.name}"?`, { title: 'Delete Item', okText: 'Delete' }).then((ok) => {
             if (!ok) return;
             Store.delete(id);
         });
