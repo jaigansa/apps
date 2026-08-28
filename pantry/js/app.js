@@ -473,6 +473,8 @@ const UI = {
     menuListId: null,
     categoryIcons: {},
     searchQuery: '',
+    selectedCategoryFilter: 'all',
+    onlyFavoritesFilter: false,
     hideBought: false, // kept for render filtering compatibility
 
     init() {
@@ -667,9 +669,12 @@ const UI = {
             }
         });
 
-        // List Toolbar
+        // List Toolbar: Search, Favorites Filter, Category Filter
         const searchInput = document.getElementById('search-input');
         const searchClear = document.getElementById('search-clear');
+        const categoryFilterSelect = document.getElementById('category-filter-select');
+        const filterFavBtn = document.getElementById('filter-fav-btn');
+
         const updateSearchClear = () => {
             if (!searchClear) return;
             searchClear.classList.toggle('show', !!(searchInput && searchInput.value.length > 0));
@@ -685,6 +690,16 @@ const UI = {
             updateSearchClear();
             this.render();
             if (searchInput) searchInput.focus();
+        });
+        if (categoryFilterSelect) categoryFilterSelect.addEventListener('change', (e) => {
+            this.selectedCategoryFilter = e.target.value;
+            categoryFilterSelect.classList.toggle('active', e.target.value !== 'all');
+            this.render();
+        });
+        if (filterFavBtn) filterFavBtn.addEventListener('click', () => {
+            this.onlyFavoritesFilter = !this.onlyFavoritesFilter;
+            filterFavBtn.classList.toggle('active', this.onlyFavoritesFilter);
+            this.render();
         });
 
         // Import file
@@ -1392,7 +1407,17 @@ const UI = {
         let items = Store.getActiveItems();
 
         if (this.searchQuery) {
-            items = items.filter(i => i.name.toLowerCase().includes(this.searchQuery));
+            const q = this.searchQuery.toLowerCase();
+            items = items.filter(i => 
+                (i.name && i.name.toLowerCase().includes(q)) ||
+                (i.category && i.category.toLowerCase().includes(q))
+            );
+        }
+        if (this.onlyFavoritesFilter) {
+            items = items.filter(i => Store.isFavorite(i.name));
+        }
+        if (this.selectedCategoryFilter && this.selectedCategoryFilter !== 'all') {
+            items = items.filter(i => (i.category || 'General') === this.selectedCategoryFilter);
         }
         if (this.hideBought) {
             items = items.filter(i => !i.purchased);
@@ -1401,17 +1426,28 @@ const UI = {
         listContainer.innerHTML = '';
 
         if (items.length === 0) {
-            const isEmpty = !this.searchQuery && !this.hideBought;
-            const msg = this.searchQuery ? `No results for "${this.searchQuery}".` :
-                (this.hideBought ? 'Nothing left to buy in this list! 🎉' : 'Your list is empty.');
-            const hint = this.searchQuery || this.hideBought ? '' : 'Add your first grocery item to get started.';
+            const isFiltered = !!(this.searchQuery || this.hideBought || this.onlyFavoritesFilter || (this.selectedCategoryFilter && this.selectedCategoryFilter !== 'all'));
+            let msg = 'Your list is empty.';
+            if (this.onlyFavoritesFilter) {
+                msg = 'No favorite items found in this list.';
+            } else if (this.selectedCategoryFilter && this.selectedCategoryFilter !== 'all') {
+                msg = `No items found in category "${this.selectedCategoryFilter}".`;
+            } else if (this.searchQuery) {
+                msg = `No results for "${this.searchQuery}".`;
+            } else if (this.hideBought) {
+                msg = 'Nothing left to buy in this list! 🎉';
+            }
+            const hint = isFiltered ? '' : 'Add your first grocery item to get started.';
             listContainer.innerHTML = `
                 <div class="empty-state">
                     <i data-lucide="shopping-cart" width="64" height="64" style="opacity:0.3; margin-bottom:16px;"></i>
                     <p style="font-size: 1.2rem; font-weight:600; margin:0;">${escapeHtml(msg)}</p>
                     <p style="font-size: 0.9rem; margin:4px 0 0 0;">${escapeHtml(hint)}</p>
-                    ${isEmpty ? `<button class="btn-block empty-cta" onclick="UI.openModal()">+ Add Your First Item</button>` : ''}
+                    ${!isFiltered ? `<button class="btn-block empty-cta" onclick="UI.openModal()">+ Add Your First Item</button>` : ''}
                 </div>`;
+            if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+            }
             return;
         }
 
