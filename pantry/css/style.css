@@ -631,6 +631,48 @@ header h1 {
     transform: translateX(-50%) translateY(0);
 }
 
+/* --- Update available banner --- */
+.update-banner {
+    position: fixed;
+    left: 50%;
+    bottom: 90px;
+    transform: translateX(-50%) translateY(20px);
+    z-index: 210;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 90%;
+    width: max-content;
+    background: var(--primary-gradient);
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.4;
+    padding: 12px 14px 12px 18px;
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.update-banner.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+}
+.update-banner button {
+    border: none;
+    background: #fff;
+    color: var(--primary-color);
+    font-weight: 800;
+    font-size: 0.85rem;
+    padding: 8px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.update-banner button:active { transform: scale(0.96); }
+
 /* --- Search / Toolbar --- */
 .search-wrap {
     position: relative;

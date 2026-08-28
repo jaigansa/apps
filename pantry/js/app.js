@@ -1655,7 +1655,35 @@ function updateOnlineStatus() {
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
+        const banner = document.getElementById('update-banner');
+        const reloadBtn = document.getElementById('update-reload-btn');
+
+        const showUpdate = () => {
+            if (banner) banner.classList.add('show');
+        };
+        const hideUpdate = () => {
+            if (banner) banner.classList.remove('show');
+        };
+        if (reloadBtn) reloadBtn.addEventListener('click', () => location.reload());
+
         navigator.serviceWorker.register('./sw.js')
+            .then((reg) => {
+                // A controlling SW has changed (newer version took over).
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    // Let the new SW claim the page, then offer a reload to apply the new UI.
+                    setTimeout(() => {
+                        hideUpdate();
+                        showUpdate();
+                    }, 400);
+                });
+
+                // Proactively check for updates when the tab becomes visible.
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') reg.update();
+                });
+                // Periodic background check for installed apps left open.
+                setInterval(() => reg.update(), 60 * 60 * 1000);
+            })
             .catch(() => {});
     });
 }

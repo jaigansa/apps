@@ -1,4 +1,4 @@
-const CACHE_NAME = 'grocery-app-v22';
+const CACHE_NAME = 'grocery-app-v23';
 const ASSETS = [
   './',
   './index.html',
@@ -17,6 +17,8 @@ const ASSETS = [
 
 // Install Event
 self.addEventListener('install', (e) => {
+  // Activate a newer SW immediately instead of waiting for tabs to close.
+  self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(ASSETS);
@@ -24,16 +26,19 @@ self.addEventListener('install', (e) => {
   );
 });
 
-// Activate Event (Cleanup old caches)
+// Activate Event (Cleanup old caches + take control of open pages)
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
-        })
-      );
-    })
+    Promise.all([
+      clients.claim(),
+      caches.keys().then((keys) => {
+        return Promise.all(
+          keys.map((key) => {
+            if (key !== CACHE_NAME) return caches.delete(key);
+          })
+        );
+      })
+    ])
   );
 });
 
