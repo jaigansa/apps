@@ -1,4 +1,4 @@
-const CACHE_NAME = 'grocery-app-v13';
+const CACHE_NAME = 'grocery-app-v14';
 const ASSETS = [
   './',
   './index.html',
@@ -10,7 +10,9 @@ const ASSETS = [
   './js/app.js',
   './js/data.js', // Renaming list_data.js to data.js or just keeping it
   './manifest.json',
-  './assets/icon.svg'
+  './assets/icon.svg',
+  './assets/icon-192.png',
+  './assets/icon-512.png'
 ];
 
 // Install Event

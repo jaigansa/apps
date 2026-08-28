@@ -41,7 +41,15 @@ const Store = {
 
     getDB() {
         const data = localStorage.getItem(this.DB_KEY);
-        if (data) return JSON.parse(data);
+        if (data) {
+            try {
+                return JSON.parse(data);
+            } catch (e) {
+                try { localStorage.setItem(this.DB_KEY + '_corrupt_backup', data); } catch (e2) {}
+                localStorage.removeItem(this.DB_KEY);
+                return this.migrate();
+            }
+        }
         return this.migrate();
     },
 
@@ -74,7 +82,13 @@ const Store = {
     },
 
     saveDB(db) {
-        localStorage.setItem(this.DB_KEY, JSON.stringify(db));
+        try {
+            localStorage.setItem(this.DB_KEY, JSON.stringify(db));
+        } catch (e) {
+            if (typeof Toast !== 'undefined') {
+                Toast.show('Storage full or unavailable — changes not saved.', 4000);
+            }
+        }
     },
 
     /* --- Items --- */
@@ -627,9 +641,22 @@ const UI = {
 
         // List Toolbar
         const searchInput = document.getElementById('search-input');
+        const searchClear = document.getElementById('search-clear');
+        const updateSearchClear = () => {
+            if (!searchClear) return;
+            searchClear.classList.toggle('show', !!(searchInput && searchInput.value.length > 0));
+        };
         if (searchInput) searchInput.addEventListener('input', (e) => {
             this.searchQuery = e.target.value.trim().toLowerCase();
+            updateSearchClear();
             this.render();
+        });
+        if (searchClear) searchClear.addEventListener('click', () => {
+            if (searchInput) searchInput.value = '';
+            this.searchQuery = '';
+            updateSearchClear();
+            this.render();
+            if (searchInput) searchInput.focus();
         });
 
         // Active list selector (Home)
@@ -1327,7 +1354,7 @@ const UI = {
             const done = groups[cat].filter(i => i.purchased).length;
             header.innerHTML = `
                 <div class="category-icon">${icon}</div>
-                <span>${cat}</span>
+                <span>${escapeHtml(cat)}</span>
                 <span class="category-count">${done}/${groups[cat].length}</span>
             `;
             listContainer.appendChild(header);
@@ -1505,7 +1532,8 @@ function escapeHtml(str) {
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 /* --- APP CONTROLLER --- */
