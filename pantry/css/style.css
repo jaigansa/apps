@@ -449,6 +449,9 @@ header h1 {
 }
 
 /* POS Print - Thermal Receipt (80mm) */
+/* Print QR code is invisible on screen, shown only on the receipt */
+#print-qr { display: none !important; }
+
 @media print {
     @page { size: 80mm 297mm; margin: 0; }
     html {
@@ -507,6 +510,19 @@ header h1 {
         border-bottom: 1px dashed black;
         padding-bottom: 6px;
         white-space: pre-line;
+    }
+
+    /* Print QR code (the .no-print class is overridden so it appears on the receipt) */
+    #print-qr {
+        display: flex !important;
+        justify-content: center;
+        padding: 10px 0 6px 0;
+    }
+    #print-qr svg {
+        background: #fff !important;
+        width: 55mm !important;
+        height: 55mm !important;
+        max-width: 55mm;
     }
 
     /* Category headers: centered rule style */

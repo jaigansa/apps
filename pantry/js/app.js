@@ -477,8 +477,10 @@ const UI = {
                 fabLongPressed = true;
                 if (navigator.vibrate) navigator.vibrate(50);
                 this.showPrintHint();
+                this.renderPrintQr();
                 window.print();
                 this.hidePrintHint();
+                this.clearPrintQr();
             }, FAB_LONG_PRESS_MS);
         };
         const cancelFabPress = () => {
@@ -495,8 +497,8 @@ const UI = {
         });
 
         // Keep the print hint in sync for any print trigger
-        window.addEventListener('beforeprint', () => this.showPrintHint());
-        window.addEventListener('afterprint', () => this.hidePrintHint());
+        window.addEventListener('beforeprint', () => { this.showPrintHint(); this.renderPrintQr(); });
+        window.addEventListener('afterprint', () => { this.hidePrintHint(); this.clearPrintQr(); });
 
         // Modal Close (backdrop)
         document.querySelectorAll('.modal-overlay').forEach(overlay => {
@@ -673,6 +675,26 @@ const UI = {
         const el = document.getElementById('print-hint');
         if (!el) return;
         el.classList.remove('show');
+    },
+
+    renderPrintQr() {
+        const stage = document.getElementById('print-qr');
+        if (!stage) return;
+        stage.innerHTML = '';
+        if (typeof qrcode !== 'function') return;
+        const listId = Store.getActiveListId();
+        const payload = this.buildCompactPayload(listId);
+        if (!payload) return;
+        try {
+            const qr = this.makeQr(payload);
+            if (!qr) return;
+            stage.innerHTML = qr.createSvgTag(4, 2);
+        } catch (e) { stage.innerHTML = ''; }
+    },
+
+    clearPrintQr() {
+        const stage = document.getElementById('print-qr');
+        if (stage) stage.innerHTML = '';
     },
 
     /* --- QR Share / Import --- */
