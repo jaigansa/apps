@@ -768,7 +768,7 @@ const UI = {
         return head + (items.length ? '~' + items.join('~') : '');
     },
 
-    /* --- Share active list: single tap = SMS (desktop: copy), long press = copy --- */
+    /* --- Share active list: single tap = SMS, long press = copy --- */
     getActiveShareContext() {
         const listId = Store.getActiveListId();
         const payload = this.buildCompactPayload(listId);
@@ -779,14 +779,8 @@ const UI = {
     shareActiveList() {
         const { payload, list } = this.getActiveShareContext();
         if (!payload || !list) return;
-        const isMobile = /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent)
-            || ('ontouchstart' in window && window.innerWidth < 768);
-        if (isMobile) {
-            const body = `Grocery list ${list.name}:\n${payload}\n\nImport: Pantry > Data > Import via QR (paste)`;
-            location.href = 'sms:?&body=' + encodeURIComponent(body);
-        } else {
-            this.copyActiveList();
-        }
+        const body = `Grocery list ${list.name}:\n${payload}\n\nImport: Pantry > Data > Import via QR (paste)`;
+        location.href = 'sms:?&body=' + encodeURIComponent(body);
     },
 
     copyActiveList() {
