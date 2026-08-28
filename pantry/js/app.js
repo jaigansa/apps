@@ -456,7 +456,9 @@ const UI = {
             fabPressTimer = setTimeout(() => {
                 fabLongPressed = true;
                 if (navigator.vibrate) navigator.vibrate(50);
+                this.showPrintHint();
                 window.print();
+                this.hidePrintHint();
             }, FAB_LONG_PRESS_MS);
         };
         const cancelFabPress = () => {
@@ -471,6 +473,10 @@ const UI = {
             if (fabLongPressed) { fabLongPressed = false; return; }
             this.openModal();
         });
+
+        // Keep the print hint in sync for any print trigger
+        window.addEventListener('beforeprint', () => this.showPrintHint());
+        window.addEventListener('afterprint', () => this.hidePrintHint());
 
         // Modal Close (backdrop)
         document.querySelectorAll('.modal-overlay').forEach(overlay => {
@@ -616,6 +622,18 @@ const UI = {
             if (!ok) return;
             Store.delete(id);
         });
+    },
+
+    showPrintHint() {
+        const el = document.getElementById('print-hint');
+        if (!el) return;
+        el.textContent = 'Select your 80mm / thermal printer (or Custom paper 80×297mm) in the print dialog for correct sizing.';
+        el.classList.add('show');
+    },
+    hidePrintHint() {
+        const el = document.getElementById('print-hint');
+        if (!el) return;
+        el.classList.remove('show');
     },
 
     /* --- Modals --- */

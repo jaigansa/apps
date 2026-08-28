@@ -450,7 +450,7 @@ header h1 {
 
 /* POS Print - Thermal Receipt (80mm) */
 @media print {
-    @page { size: 80mm auto; margin: 0; }
+    @page { size: 80mm 297mm; margin: 0; }
     html {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
@@ -580,6 +580,33 @@ header h1 {
         font-size: 9pt;
         white-space: pre-line;
     }
+}
+
+/* --- Print hint toast (shown before print dialog) --- */
+.print-hint {
+    position: fixed;
+    left: 50%;
+    bottom: 96px;
+    transform: translateX(-50%) translateY(20px);
+    z-index: 200;
+    max-width: 90%;
+    width: max-content;
+    background: var(--text-main);
+    color: var(--bg-color);
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: center;
+    padding: 12px 18px;
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.print-hint.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
 
 /* --- Search / Toolbar --- */
