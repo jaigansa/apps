@@ -663,16 +663,6 @@ const UI = {
             if (searchInput) searchInput.focus();
         });
 
-        // Active list selector (Home)
-        const activeListBtn = document.getElementById('active-list-btn');
-        if (activeListBtn) activeListBtn.addEventListener('click', () => this.openListModal());
-
-        const newListBtn = document.getElementById('new-list-btn');
-        if (newListBtn) newListBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.openNewListModal();
-        });
-
         // Import file
         const importFile = document.getElementById('import-file');
         if (importFile) importFile.addEventListener('change', (e) => {
