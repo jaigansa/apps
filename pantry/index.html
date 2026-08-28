@@ -168,6 +168,25 @@
         <i data-lucide="plus" width="24" height="24"></i>
     </button>
 
+    <!-- List Actions Menu (compact popover) -->
+    <div id="list-action-menu" class="list-action-menu" role="menu">
+        <button type="button" class="list-action-item" data-action="qr" onclick="UI.openQrModal(UI.menuListId); UI.closeListMenus();">
+            <i data-lucide="qr-code" width="16" height="16"></i><span>Share QR</span>
+        </button>
+        <button type="button" class="list-action-item" data-action="active" onclick="Store.setActiveList(UI.menuListId); UI.closeListMenus();">
+            <i data-lucide="check" width="16" height="16"></i><span>Set Active</span>
+        </button>
+        <button type="button" class="list-action-item" data-action="rename" onclick="UI.openNewListModal(UI.menuListId); UI.closeListMenus();">
+            <i data-lucide="pencil" width="16" height="16"></i><span>Rename</span>
+        </button>
+        <button type="button" class="list-action-item" data-action="archive" onclick="Store.archiveList(UI.menuListId); UI.closeListMenus();">
+            <i data-lucide="archive" width="16" height="16"></i><span>Archive</span>
+        </button>
+        <button type="button" class="list-action-item danger" data-action="delete" onclick="Store.deleteList(UI.menuListId); UI.closeListMenus();">
+            <i data-lucide="trash-2" width="16" height="16"></i><span>Delete</span>
+        </button>
+    </div>
+
     <!-- Add Item Modal -->
     <div id="add-modal" class="modal-overlay">
         <div class="modal-content">

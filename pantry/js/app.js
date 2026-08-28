@@ -456,6 +456,7 @@ const Toast = {
 const UI = {
     editingItemId: null,
     editingListId: null,
+    menuListId: null,
     categoryIcons: {},
     searchQuery: '',
     hideBought: false, // kept for render filtering compatibility
@@ -519,6 +520,14 @@ const UI = {
             if (e.key !== 'Escape') return;
             if (document.getElementById('qr-modal').classList.contains('open')) this.closeQrModal();
             if (document.getElementById('qr-import-modal').classList.contains('open')) this.closeQrImportModal();
+            this.closeListMenus();
+        });
+
+        // Close list actions menu on outside click
+        document.addEventListener('click', (e) => {
+            if (e.target.closest && !e.target.closest('.list-menu-btn') && !e.target.closest('#list-action-menu')) {
+                this.closeListMenus();
+            }
         });
 
         // Theme Selector
@@ -1382,23 +1391,9 @@ const UI = {
                     <div style="font-weight:700;">${escapeHtml(list.name)} ${isActive ? '<span class="active-badge">Active</span>' : ''}</div>
                     <div style="font-size:0.8rem; color:var(--text-secondary);">${count} items · ${pend} pending</div>
                 </div>
-                <div style="display:flex; gap:4px; flex-shrink:0;">
-                    <button class="btn-icon" title="Share via QR" onclick="UI.openQrModal('${list.id}')">
-                        <i data-lucide="qr-code" width="18" height="18"></i>
-                    </button>
-                    <button class="btn-icon" title="Set active" onclick="Store.setActiveList('${list.id}')">
-                        <i data-lucide="check" width="18" height="18"></i>
-                    </button>
-                    <button class="btn-icon" title="Rename" onclick="UI.openNewListModal('${list.id}')">
-                        <i data-lucide="pencil" width="18" height="18"></i>
-                    </button>
-                    <button class="btn-icon" title="Archive to history" onclick="Store.archiveList('${list.id}')">
-                        <i data-lucide="archive" width="18" height="18"></i>
-                    </button>
-                    <button class="btn-icon delete" title="Delete" onclick="Store.deleteList('${list.id}')">
-                        <i data-lucide="trash-2" width="18" height="18"></i>
-                    </button>
-                </div>
+                <button class="btn-icon list-menu-btn" title="List actions" data-list-id="${list.id}" data-archived="0" aria-haspopup="true" aria-label="List actions for ${escapeHtml(list.name)}">
+                    <i data-lucide="ellipsis-vertical" width="18" height="18"></i>
+                </button>
             `;
             container.appendChild(row);
         });
@@ -1417,8 +1412,8 @@ const UI = {
                         <div style="font-weight:700; color:var(--text-secondary);">${escapeHtml(list.name)}</div>
                         <div style="font-size:0.8rem; color:var(--text-secondary);">${count} items</div>
                     </div>
-                    <button class="btn-icon delete" title="Delete history" onclick="Store.deleteList('${list.id}')">
-                        <i data-lucide="trash-2" width="18" height="18"></i>
+                    <button class="btn-icon list-menu-btn" title="History actions" data-list-id="${list.id}" data-archived="1" aria-haspopup="true" aria-label="History actions for ${escapeHtml(list.name)}">
+                        <i data-lucide="ellipsis-vertical" width="18" height="18"></i>
                     </button>
                 `;
                 container.appendChild(row);
@@ -1426,6 +1421,51 @@ const UI = {
         }
 
         this.refreshIcons();
+        container.querySelectorAll('.list-menu-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleListMenu(btn.getAttribute('data-list-id'), btn, btn.getAttribute('data-archived') === '1');
+            });
+        });
+    },
+
+    toggleListMenu(id, anchorBtn, isArchived) {
+        this.closeListMenus();
+        const menu = document.getElementById('list-action-menu');
+        if (!menu) return;
+        this.menuListId = id;
+
+        const isActive = id === Store.getActiveListId();
+
+        // Show/hide context-sensitive items
+        const setVisible = (action, visible) => {
+            const item = menu.querySelector(`.list-action-item[data-action="${action}"]`);
+            if (item) item.style.display = visible ? '' : 'none';
+        };
+        setVisible('qr', !isArchived);
+        setVisible('active', !isArchived);
+        setVisible('rename', !isArchived);
+        setVisible('archive', !isArchived);
+        setVisible('delete', true);
+
+        const r = anchorBtn.getBoundingClientRect();
+        const menuW = 210;
+        let left = r.right - menuW;
+        if (left < 8) left = 8;
+        if (left + menuW > window.innerWidth - 8) left = window.innerWidth - menuW - 8;
+        menu.style.left = Math.max(8, left) + 'px';
+        menu.style.top = (r.bottom + 6) + 'px';
+        menu.classList.add('open');
+        this.refreshIcons();
+    },
+
+    closeListMenus() {
+        const menu = document.getElementById('list-action-menu');
+        if (menu) {
+            menu.classList.remove('open');
+            menu.style.left = '-9999px';
+        }
+        this.menuListId = null;
     },
 
     /* --- Export / Import --- */
