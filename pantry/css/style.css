@@ -485,7 +485,7 @@ header h1 {
         display: none !important;
     }
     .app-container, .section, #home { display: block !important; margin: 0 !important; padding: 0 !important; width: 74mm !important; }
-    .swipe-wrap { overflow: visible !important; margin-bottom: 0 !important; page-break-inside: avoid; }
+    .swipe-wrap { overflow: visible !important; margin-bottom: 0 !important; break-inside: avoid; page-break-inside: avoid; }
     .swipe-content { transform: none !important; height: auto !important; }
 
     /* Receipt header */
@@ -549,8 +549,8 @@ header h1 {
         box-shadow: none !important;
         border-radius: 0 !important;
         transform: none !important;
+        break-inside: avoid;
         page-break-inside: avoid;
-        page-break-after: avoid;
     }
     .card::before { content: "• "; }
     .item-info {

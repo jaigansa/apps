@@ -1,4 +1,4 @@
-const CACHE_NAME = 'grocery-app-v11';
+const CACHE_NAME = 'grocery-app-v12';
 const ASSETS = [
   './',
   './index.html',
@@ -35,11 +35,17 @@ self.addEventListener('activate', (e) => {
   );
 });
 
-// Fetch Event (Offline support)
+// Fetch Event (Offline-first with revalidation)
 self.addEventListener('fetch', (e) => {
+  const req = e.request;
+  if (req.method !== 'GET') return;
   e.respondWith(
-    caches.match(e.request).then((response) => {
-      return response || fetch(e.request);
-    })
+    fetch(req)
+      .then((networkRes) => {
+        const copy = networkRes.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
+        return networkRes;
+      })
+      .catch(() => caches.match(req).then((cached) => cached || caches.match('./index.html')))
   );
 });
