@@ -1,62 +1,170 @@
 <!DOCTYPE html>
-<html>
+<html lang="ta" data-theme="light">
 
 <head>
-    <title>TamText</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta name="description" content="Tamil Unicode converter supports to convert the words or document into Unicode to Bhamini , Tab , Tscii. This appliction is user-friendly and the user can use very easily." />
-    <meta name="author" content="" />
+    <title>TamText - Tamil Font Converter & Transliteration</title>
+    <meta name="description" content="Tamil Font Converter - Supports Unicode to Bamini, TSCII, TAB, TAM, Senthamizh, Vanavil, Anjal, Tanglish, and Hex Code Points." />
 
-    <!-- Internal Links -->
-    <link rel="stylesheet" href="styles/main.css" />
-    <script src="js/main.js"></script>
-    <script src="js/trans.js"></script>
-
-    <!-- External Links-->
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-    <link href="https://fonts.googleapis.com/css2?family=Comfortaa&family=Montserrat:wght@900" rel="stylesheet" />
+
+    <!-- Application Stylesheet & Modular Engine Scripts -->
+    <link rel="stylesheet" href="styles/main.css" />
+    <script src="js/encoders/legacy.js" defer></script>
+    <script src="js/engine/lexicon.js" defer></script>
+    <script src="js/engine/tanglish.js" defer></script>
+    <script src="js/engine/unicode_inspector.js" defer></script>
+    <script src="js/trans.js" defer></script>
+    <script src="js/main.js" defer></script>
 </head>
 
 <body>
-    <h1>
-        Tamil Fonts Converter
-    </h1>
-    <form>
-        <h2>Input - Paste or Type</h2>
-        <textarea id="sourceText" placeholder="Write here" class="source_box" autofocus></textarea>
-        <h2>Output - Select and Copy </h2>
-        <textarea id="targetText" placeholder="Copy here" class="target_here" readonly></textarea>
+    <!-- Top Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <a href="#" class="brand">
+                <div class="brand-icon">த</div>
+                <div class="brand-title">
+                    <h1>TamText</h1>
+                    <p>Tamil Font & Unicode Converter</p>
+                </div>
+            </a>
 
-        <div id="switch-section">
+            <div class="header-actions">
+                <label class="live-switch" title="Toggle automatic conversion as you type">
+                    <input type="checkbox" id="liveToggle" class="switch-input" checked />
+                    <span class="switch-slider"></span>
+                    <span>Live Convert</span>
+                </label>
 
-            <div class="convertSwitch">
-                <button class="fancy-button" type="button" onclick="getbamini()">UNICODE <i class="material-icons "> double_arrow </i> BAMINI</button>
-                <button class="fancy-button" type="button" onclick="gettscii()">UNICODE <i class="material-icons "> double_arrow </i> TSCII</button>
-                <button class="fancy-button" type="button" onclick="gettab() ">UNICODE <i class="material-icons "> double_arrow </i> TAB</button>
-            </div>
-
-            <div class="clear-copy">
-                <button class="fancy-button" type="button" id="clear" onclick="cleardata()"> <i class="material-icons"> backspace </i> CLEAR</button>
-                <button class="fancy-button" type="button" id="copy" onclick="copydata()"> <i class="material-icons"> content_copy </i> COPY</button>
-            </div>
-
-            <div class="reset">
-                <button class="fancy-button" type="reset" id="reset" onclick="resetdata()"> <i class="material-icons"> refresh</i> RESET</button>
+                <button id="themeToggleBtn" class="icon-btn" title="Toggle Dark/Light Mode">
+                    <i class="material-icons">dark_mode</i>
+                </button>
             </div>
         </div>
-    </form>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+        <!-- Compact Converter Selector Section -->
+        <section class="compact-selector-section">
+            <!-- Main Category Segmented Bar -->
+            <div class="category-segmented-bar">
+                <button class="category-pill active" data-category="legacy">
+                    <i class="material-icons">font_download</i> Fonts
+                </button>
+                <button class="category-pill" data-category="tanglish">
+                    <i class="material-icons">translate</i> Tanglish
+                </button>
+                <button class="category-pill" data-category="code_points">
+                    <i class="material-icons">code</i> Code Points
+                </button>
+            </div>
+
+            <!-- Legacy Fonts Sub-Toolbar -->
+            <div id="legacySubToolbar" class="sub-toolbar">
+                <div class="direction-segmented">
+                    <button class="direction-btn active" data-dir="forward">
+                        <i class="material-icons">arrow_forward</i> Unicode ➔ Font
+                    </button>
+                    <button class="direction-btn" data-dir="reverse">
+                        <i class="material-icons">history</i> Font ➔ Unicode
+                    </button>
+                </div>
+
+                <div class="font-select-wrapper">
+                    <label for="fontSelect" class="select-label">Encoding:</label>
+                    <select id="fontSelect" class="custom-select">
+                        <option value="bamini">Bamini</option>
+                        <option value="tscii">TSCII</option>
+                        <option value="tab">TAB</option>
+                        <option value="tam">TAM</option>
+                        <option value="senthamizh">Senthamizh</option>
+                        <option value="vanavil">Vanavil Avviyar</option>
+                        <option value="anjal">Anjal</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Code Points Sub-Toolbar -->
+            <div id="codePointsSubToolbar" class="sub-toolbar" style="display: none;">
+                <div class="code-points-buttons">
+                    <button class="mode-tab active" data-mode="unicode_hex">
+                        <i class="material-icons">code</i> Unicode Hex (U+0B95)
+                    </button>
+                    <button class="mode-tab" data-mode="html_entities">
+                        <i class="material-icons">html</i> HTML Entities (&#x0B95;)
+                    </button>
+                    <button class="mode-tab" data-mode="unicode_hex_rev">
+                        <i class="material-icons">data_object</i> Decode Hex ➔ Tamil
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Editor Dual Panels -->
+        <div class="editor-grid">
+            <!-- Source Input Panel -->
+            <div class="editor-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="material-icons">edit_note</i> Input Text
+                    </div>
+                    <span id="sourceCount" class="stat-badge">0 chars | 0 words</span>
+                </div>
+                <textarea id="sourceText" class="text-editor" placeholder="Write or paste Unicode Tamil text here..." autofocus></textarea>
+            </div>
+
+            <!-- Target Output Panel -->
+            <div class="editor-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="material-icons">output</i> Converted Output
+                    </div>
+                    <span id="targetCount" class="stat-badge">0 chars | 0 words</span>
+                </div>
+                <textarea id="targetText" class="text-editor" placeholder="Converted legacy font text will appear here..." readonly></textarea>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-toolbar">
+            <button id="convertBtn" class="action-btn primary">
+                <i class="material-icons">transform</i> Convert Now
+            </button>
+            <button id="copyBtn" class="action-btn secondary">
+                <i class="material-icons">content_copy</i> Copy Result
+            </button>
+            <button id="swapBtn" class="action-btn secondary">
+                <i class="material-icons">swap_horiz</i> Swap Text
+            </button>
+            <button id="clearBtn" class="action-btn secondary">
+                <i class="material-icons">backspace</i> Clear
+            </button>
+        </div>
+
+        <!-- Live Character Inspector Panel -->
+        <section class="inspector-section">
+            <div class="inspector-title">
+                <i class="material-icons">analytics</i> Live Character Code Point Inspector
+            </div>
+            <div id="inspectorGrid" class="inspector-grid">
+                <div class="empty-inspector">Type or convert text to view character code points</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification Popup -->
+    <div id="toast" class="toast"></div>
+
     <footer>
-        <div>
-            <h3>ThankYou</h3>
-        </div>
+        <p>TamText &bull; Tamil Font Converter & Code Point Inspector &bull; Created with &hearts; by jaigansa</p>
     </footer>
-<a href="../index.html" style="position: fixed; bottom: 20px; left: 20px; width: 48px; height: 48px; background-color: rgba(30, 41, 59, 0.85); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3); backdrop-filter: blur(4px); transition: transform 0.2s;">
-  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-  </svg>
-</a>
 </body>
 
 </html>
