@@ -1450,6 +1450,9 @@ const UI = {
         const listNameEl = document.getElementById('active-list-text');
         const activeList = Store.getActiveList();
         if (listNameEl) listNameEl.textContent = activeList ? activeList.name : 'My List';
+
+        const headerTitle = document.getElementById('header-title');
+        if (headerTitle) headerTitle.textContent = '🛒 ' + (activeList ? activeList.name : 'Pantry');
     },
 
     /* --- Lists rendering (Settings) --- */
