@@ -777,10 +777,47 @@ const UI = {
     },
 
     shareActiveList() {
-        const { payload, list } = this.getActiveShareContext();
-        if (!payload || !list) return;
-        const body = `Grocery list ${list.name}:\n${payload}\n\nImport: Pantry > Data > Import via QR (paste)`;
+        const body = this.buildSmsBody();
+        if (!body) return;
         location.href = 'sms:?&body=' + encodeURIComponent(body);
+    },
+
+    // Readable, aligned SMS body: each item on its own line, the importable
+    // payload on a final single line so the sender can paste it back into Pantry.
+    buildSmsBody() {
+        const list = Store.getActiveList();
+        if (!list) return null;
+        const items = Store.getActiveItems().filter(i => !i.purchased);
+
+        const groups = {};
+        items.forEach(i => {
+            const cat = i.category || 'General';
+            (groups[cat] = groups[cat] || []).push(i);
+        });
+        const catNames = Object.keys(groups);
+
+        const lines = [];
+        lines.push('🛒 ' + list.name);
+        lines.push('────────────────');
+        catNames.forEach((cat, ci) => {
+            if (ci > 0) lines.push('');
+            const catCount = groups[cat].length;
+            lines.push(`[${cat}] (${catCount})`);
+            let maxName = 0;
+            groups[cat].forEach(i => { maxName = Math.max(maxName, String(i.name).length); });
+            groups[cat].forEach(i => {
+                const name = String(i.name);
+                const qty = String(i.quantity != null ? i.quantity : 1);
+                const unit = String(i.unit || 'nos');
+                lines.push('  ' + name.padEnd(Math.min(maxName + 2, 28)) + qty + ' ' + unit);
+            });
+        });
+        lines.push('────────────────');
+        lines.push('');
+        lines.push('Add to Pantry: paste the line starting with "P1|" into Data → Import via QR');
+        lines.push(this.buildCompactPayload(list.id));
+
+        return lines.join('\n');
     },
 
     copyActiveList() {
