@@ -1,10 +1,36 @@
 // TamCalc Main Application Script
-// Grounded in Wikipedia Tamil Numbers Specification (https://ta.wikipedia.org/wiki/தமிழ்_எண்கள்)
+// Based on Authentic Tamil Number System & Wikipedia Specifications
 
 const TAMIL_DIGITS = ["௦", "௧", "௨", "௩", "௪", "௫", "௬", "௭", "௮", "௯"];
 const TAMIL_TEN = "௰";
 const TAMIL_HUNDRED = "௱";
 const TAMIL_THOUSAND = "௲";
+
+// Special Large Powers Table from Tamil Mathematics Document
+const TAMIL_LARGE_POWERS = {
+    1: { word: "ஒன்று", symbol: "௧" },
+    10: { word: "பத்து", symbol: "௰" },
+    100: { word: "நூறு", symbol: "௱" },
+    1000: { word: "ஆயிரம்", symbol: "௲" },
+    10000: { word: "பத்தாயிரம்", symbol: "௰௲" },
+    100000: { word: "நூறாயிரம் (இலட்சம்)", symbol: "௱௲" },
+    1000000: { word: "பத்து நூறாயிரம்", symbol: "௰௱௲" },
+    10000000: { word: "கோடி", symbol: "௱௱௲" },
+    100000000: { word: "அற்புதம்", symbol: "௰௱௱௲" },
+    1000000000: { word: "நிகற்புதம்", symbol: "௱௱௱௲" },
+    10000000000: { word: "கும்பம்", symbol: "௲௱௱௲" },
+    100000000000: { word: "கணம்", symbol: "௰௲௱௱௲" },
+    1000000000000: { word: "கற்பம்", symbol: "௱௲௱௱௲" },
+    10000000000000: { word: "நிகற்பம்", symbol: "௰௱௲௱௱௲" },
+    100000000000000: { word: "பதுமம்", symbol: "௱௱௲௱௱௲" },
+    1000000000000000: { word: "சங்கம்", symbol: "௰௱௱௲௱௱௲" },
+    10000000000000000: { word: "வெள்ளம்", symbol: "௱௱௱௲௱௱௲" },
+    100000000000000000: { word: "அந்நியம்", symbol: "௲௱௱௲௱௱௲" },
+    1000000000000000000: { word: "அர்த்தம்", symbol: "௰௲௱௱௲௱௱௲" },
+    10000000000000000000: { word: "பரார்த்தம்", symbol: "௱௲௱௱௲௱௱௲" },
+    100000000000000000000: { word: "பூரியம்", symbol: "௰௱௲௱௱௲௱௱௲" },
+    1000000000000000000000: { word: "பிரமகற்பம்", symbol: "௱௱௲௱௱௲௱௱௲" }
+};
 
 let currentExpression = "";
 let tamilSystemMode = "traditional"; // 'traditional' (மரபு: ௨௲௪௱௫௰௩) or 'modern' (நவீன: ௨௪௫௩)
@@ -75,13 +101,11 @@ function updateDisplays() {
         return;
     }
 
-    // Update Tamil display based on expression or number
     if (tamDisplay) {
         tamDisplay.value = renderTamilExpression(currentExpression);
     }
 
     if (tamWordsDisplay) {
-        // If current input is a single evaluateable number or evaluated result
         const num = Number(currentExpression);
         if (!isNaN(num)) {
             tamWordsDisplay.innerText = toTamilWords(num);
@@ -121,7 +145,6 @@ function calculate() {
     }
 }
 
-// Render expression in Tamil
 function renderTamilExpression(expr) {
     if (!expr) return "௦";
     const num = Number(expr);
@@ -129,7 +152,6 @@ function renderTamilExpression(expr) {
         return formatTamilNumber(num);
     }
     
-    // Expression with operators
     return expr.toString().split(/([\+\-\*\/\%])/).map(part => {
         const n = Number(part);
         if (!isNaN(n) && part.trim() !== "") {
@@ -141,18 +163,21 @@ function renderTamilExpression(expr) {
     }).join("");
 }
 
-// Master Tamil Number Formatter
 function formatTamilNumber(num) {
     if (isNaN(num)) return "";
+    
+    // Check exact power of 10 from Tamil Large Powers table
+    if (TAMIL_LARGE_POWERS[num]) {
+        return tamilSystemMode === "traditional" ? TAMIL_LARGE_POWERS[num].symbol : toModernTamilNumeral(num);
+    }
+
     if (tamilSystemMode === "traditional" && Number.isInteger(num) && Math.abs(num) < 100000000) {
         return toTraditionalTamilNumeral(num);
     }
     return toModernTamilNumeral(num);
 }
 
-// ----------------------------------------------------
-// Traditional Abbreviational Tamil Numeral System (௰, ௱, ௲)
-// ----------------------------------------------------
+// Traditional Tamil Numeral Algorithm
 function toTraditionalTamilNumeral(num) {
     if (num === 0) return "௦";
     let isNeg = num < 0;
@@ -205,7 +230,7 @@ function convertIntToTraditional(n) {
     return res;
 }
 
-// Modern Positional System (௦ - ௯)
+// Modern Positional System
 function toModernTamilNumeral(val) {
     if (val === undefined || val === null) return "";
     return val.toString().split("").map(char => {
@@ -219,11 +244,16 @@ function toModernTamilNumeral(val) {
 }
 
 // ----------------------------------------------------
-// Tamil Number Words Generator (எழுத்து வடிவம்)
+// Tamil Number Words Generator (எழுத்து வடிவம் / எண் ஒலிப்பு)
 // ----------------------------------------------------
 function toTamilWords(num) {
     if (isNaN(num)) return "";
-    if (num === 0) return "பூஜ்யம்";
+    if (num === 0) return "பூஜ்யம் (சுழியம்)";
+
+    // Check large powers table directly first
+    if (TAMIL_LARGE_POWERS[num]) {
+        return TAMIL_LARGE_POWERS[num].word;
+    }
 
     let isNegative = num < 0;
     let n = Math.abs(num);
@@ -254,6 +284,11 @@ function convertSingleDigitToWord(d) {
 
 function convertIntToTamilWords(n) {
     if (n === 0) return "பூஜ்யம்";
+
+    // Direct lookup for powers of 10 if available
+    if (TAMIL_LARGE_POWERS[n]) {
+        return TAMIL_LARGE_POWERS[n].word;
+    }
 
     const units = ["", "ஒன்று", "இரண்டு", "மூன்று", "நான்கு", "ஐந்து", "ஆறு", "ஏழு", "எட்டு", "ஒன்பது"];
     const teens = ["பத்து", "பதினொன்று", "பன்னிரண்டு", "பதின்மூன்று", "பதினான்கு", "பதினைந்து", "பதினாறு", "பதினேழு", "பதினெட்டு", "பத்தொன்பது"];
