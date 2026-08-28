@@ -480,9 +480,33 @@ const UI = {
         const settingsBtn = document.getElementById('settings-btn');
         if (settingsBtn) settingsBtn.addEventListener('click', () => this.openSettings());
 
-        // Share active list (SMS on mobile, copy on desktop)
+        // Share active list: single tap = SMS (desktop: copy), long press = copy
         const shareBtn = document.getElementById('share-btn');
-        if (shareBtn) shareBtn.addEventListener('click', () => this.shareActiveList());
+        if (shareBtn) {
+            let sharePressTimer = null;
+            let shareLongPressed = false;
+            const SHARE_LONG_PRESS_MS = 600;
+            const startSharePress = () => {
+                shareLongPressed = false;
+                sharePressTimer = setTimeout(() => {
+                    shareLongPressed = true;
+                    if (navigator.vibrate) navigator.vibrate(30);
+                    this.copyActiveList();
+                }, SHARE_LONG_PRESS_MS);
+            };
+            const cancelSharePress = () => {
+                if (sharePressTimer) { clearTimeout(sharePressTimer); sharePressTimer = null; }
+            };
+            shareBtn.addEventListener('pointerdown', startSharePress);
+            shareBtn.addEventListener('pointerup', cancelSharePress);
+            shareBtn.addEventListener('pointerleave', cancelSharePress);
+            shareBtn.addEventListener('pointercancel', cancelSharePress);
+            shareBtn.addEventListener('contextmenu', (e) => e.preventDefault());
+            shareBtn.addEventListener('click', () => {
+                if (shareLongPressed) { shareLongPressed = false; return; }
+                this.shareActiveList();
+            });
+        }
 
         // FAB: click = add item, long press = print
         const fab = document.getElementById('fab-add');
@@ -744,11 +768,16 @@ const UI = {
         return head + (items.length ? '~' + items.join('~') : '');
     },
 
-    /* --- Share active list (SMS on mobile / copy on desktop) --- */
-    shareActiveList() {
+    /* --- Share active list: single tap = SMS (desktop: copy), long press = copy --- */
+    getActiveShareContext() {
         const listId = Store.getActiveListId();
         const payload = this.buildCompactPayload(listId);
         const list = Store.getLists().find(l => l.id === listId);
+        return { listId, payload, list };
+    },
+
+    shareActiveList() {
+        const { payload, list } = this.getActiveShareContext();
         if (!payload || !list) return;
         const isMobile = /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent)
             || ('ontouchstart' in window && window.innerWidth < 768);
@@ -756,13 +785,19 @@ const UI = {
             const body = `Grocery list ${list.name}:\n${payload}\n\nImport: Pantry > Data > Import via QR (paste)`;
             location.href = 'sms:?&body=' + encodeURIComponent(body);
         } else {
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(payload)
-                    .then(() => Toast.show('List copied — paste into the other device\'s Pantry.'))
-                    .catch(() => this.fallbackCopy(payload));
-            } else {
-                this.fallbackCopy(payload);
-            }
+            this.copyActiveList();
+        }
+    },
+
+    copyActiveList() {
+        const { payload } = this.getActiveShareContext();
+        if (!payload) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(payload)
+                .then(() => Toast.show('List copied — paste into the other device\'s Pantry.'))
+                .catch(() => this.fallbackCopy(payload));
+        } else {
+            this.fallbackCopy(payload);
         }
     },
 
