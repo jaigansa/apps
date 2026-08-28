@@ -511,6 +511,7 @@ const UI = {
                     this.closeSettings();
                     this.closeQrModal();
                     this.closeQrImportModal();
+                    this.closeDocsModal();
                 }
             });
         });
@@ -520,6 +521,7 @@ const UI = {
             if (e.key !== 'Escape') return;
             if (document.getElementById('qr-modal').classList.contains('open')) this.closeQrModal();
             if (document.getElementById('qr-import-modal').classList.contains('open')) this.closeQrImportModal();
+            if (document.getElementById('docs-modal').classList.contains('open')) this.closeDocsModal();
             this.closeListMenus();
         });
 
@@ -985,6 +987,9 @@ const UI = {
 
     openThemeModal() { document.getElementById('theme-modal').classList.add('open'); },
     closeThemeModal() { document.getElementById('theme-modal').classList.remove('open'); },
+
+    openDocsModal() { document.getElementById('docs-modal').classList.add('open'); },
+    closeDocsModal() { document.getElementById('docs-modal').classList.remove('open'); },
 
     openUnitModal() { document.getElementById('unit-modal').classList.add('open'); },
     closeUnitModal() { document.getElementById('unit-modal').classList.remove('open'); },

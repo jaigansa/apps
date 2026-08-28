@@ -1143,6 +1143,79 @@ header h1 {
 .qr-import-status.ok { color: var(--primary-color); }
 .qr-import-status.err { color: var(--danger-color); }
 
+/* --- Documentation modal --- */
+.doc-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+    background: none;
+    border: none;
+    padding: 8px 14px;
+    color: var(--primary-color);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 20px;
+    transition: background-color 0.15s;
+}
+.doc-link svg { color: currentColor; flex-shrink: 0; }
+.doc-link:hover { background: rgba(5, 150, 105, 0.1); }
+
+.docs-content { display: flex; flex-direction: column; max-height: 86vh; }
+.doc-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+.doc-title { font-size: var(--fs-lg); font-weight: 800; color: var(--text-main); }
+.docs-body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 4px;
+}
+.docs-section {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+.docs-section:last-of-type { border-bottom: none; }
+.docs-section h4 {
+    margin: 0 0 8px 0;
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--primary-color);
+}
+.docs-section ul {
+    margin: 0;
+    padding: 0;
+    padding-left: 4px;
+    list-style: none;
+}
+.docs-section li {
+    position: relative;
+    padding-left: 18px;
+    margin-bottom: 7px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-main);
+}
+.docs-section li::before {
+    content: "•";
+    position: absolute;
+    left: 2px;
+    color: var(--primary-color);
+    font-weight: 800;
+}
+.docs-section code {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 5px;
+    padding: 1px 5px;
+    font-size: 0.82rem;
+}
+
 /* --- Dashboard progress --- */
 .dashboard-stats { margin-bottom: var(--space-6); }
 

@@ -143,6 +143,9 @@
             <div class="text-center mt-32 text-secondary">
                 <p class="fs-sm fw-700" style="margin:0;">Grocery App v2.0.0</p>
                 <p class="fs-xss">Multi-list · Favorites · Search · Gestures · Backup</p>
+                <button type="button" class="doc-link" onclick="UI.openDocsModal()">
+                    <i data-lucide="book-open" width="15" height="15"></i> Documentation
+                </button>
             </div>
         </div>
     </div>
@@ -340,6 +343,87 @@
                 <button type="button" class="btn-block flex-1" style="padding:12px; font-size:0.95rem;" onclick="UI.importQrInput()">Import</button>
                 <button type="button" class="btn-block modal-cancel flex-1" onclick="UI.closeQrImportModal()" style="font-size:0.95rem; padding:12px;">Cancel</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Documentation Modal -->
+    <div id="docs-modal" class="modal-overlay flex-center" role="dialog" aria-modal="true" aria-labelledby="docs-title" aria-describedby="docs-body">
+        <div class="modal-content docs-content" style="width:92%; max-width:420px; border-radius:var(--radius-lg); transform:scale(0.9); padding:24px;">
+            <div class="doc-head">
+                <span class="doc-title">📖 Documentation</span>
+                <button class="modal-close" onclick="UI.closeDocsModal()" aria-label="Close documentation">
+                    <i data-lucide="x" width="20" height="20"></i>
+                </button>
+            </div>
+            <div class="docs-body" id="docs-body">
+
+                <div class="docs-section">
+                    <h4>Lists</h4>
+                    <ul>
+                        <li>Create a new list, rename it, or switch the <b>active</b> list from <b>Settings → Lists</b>.</li>
+                        <li>Archive a finished list to <b>History</b> to keep it out of the way, or delete it permanently.</li>
+                        <li>Each list has its own items and progress.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
+                    <h4>Items</h4>
+                    <ul>
+                        <li>Tap <b>＋</b> to add an item with name, category, quantity and unit.</li>
+                        <li>Tap an item to mark it <b>purchased</b>; tap again to unmark.</li>
+                        <li>Long-press an item (or right-click on desktop) to <b>edit</b> it.</li>
+                        <li>Use the <b>Search</b> bar to filter items.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
+                    <h4>Gestures</h4>
+                    <ul>
+                        <li><b>Swipe left</b> — favourite / un-favourite an item.</li>
+                        <li><b>Swipe right</b> — delete an item (with confirmation).</li>
+                        <li><b>Tap</b> — toggle purchased.</li>
+                        <li><b>Long-press</b> — edit the item.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
+                    <h4>Print (POS receipt)</h4>
+                    <ul>
+                        <li>Long-press the <b>＋</b> button to print the current list as an 80&nbsp;mm thermal receipt.</li>
+                        <li>In the print dialog, select your <b>80&nbsp;mm / thermal printer</b> (or <b>Custom 80×297&nbsp;mm</b>) for correct sizing.</li>
+                        <li>Receipts always print in black on white, regardless of theme, with a trailing feed for the auto-cutter.</li>
+                        <li>Purchased items are hidden from the printed receipt.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
+                    <h4>QR Share &amp; Import</h4>
+                    <ul>
+                        <li>Open <b>Settings → Lists</b>, tap the <b>⋮</b> menu on a list, then <b>Share QR</b>.</li>
+                        <li>Scan the QR (or paste the payload) from <b>Settings → Data → Share / Import with QR</b> to load that list.</li>
+                        <li>Very large lists use <b>Copy Payload</b> instead — paste it into another copy of the app.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
+                    <h4>Backup &amp; Data</h4>
+                    <ul>
+                        <li><b>Export</b> saves all data as a <code>.json</code> backup file.</li>
+                        <li><b>Import</b> restores a backup file.</li>
+                        <li>Clear purchased items, or clear all data, from the Data section.</li>
+                    </ul>
+                </div>
+
+                <div class="docs-section">
+                    <h4>Appearance &amp; Offline</h4>
+                    <ul>
+                        <li>Switch <b>Light</b> / <b>Dark</b> theme from Settings.</li>
+                        <li>This app works <b>offline</b> once loaded and can be <b>installed</b> to your home screen.</li>
+                    </ul>
+                </div>
+
+            </div>
+            <button type="button" class="btn-block modal-cancel" onclick="UI.closeDocsModal()" style="margin-top:16px;">Done</button>
         </div>
     </div>
 
