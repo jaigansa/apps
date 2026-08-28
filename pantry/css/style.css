@@ -450,10 +450,15 @@ header h1 {
 
 /* POS Print - Thermal Receipt (80mm) */
 @media print {
-    @page { size: 80mm auto; margin: 3mm; }
+    @page { size: 80mm auto; margin: 0; }
+    html {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    /* Theme-proof: force everything to print white/black no matter the theme */
     html, body {
-        background: white !important;
-        color: black !important;
+        background: #fff !important;
+        color: #000 !important;
         width: 80mm !important;
         padding: 0 !important;
         margin: 0 !important;
@@ -463,12 +468,20 @@ header h1 {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
-.no-print, header, .fab, .category-icon,
+    body, .card, .swipe-content, .item-info, .item-name, .item-details,
+    .category-header, #print-meta {
+        background: #fff !important;
+        color: #000 !important;
+        border-color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .no-print, header, .fab, .category-icon,
     .summary-outline, .list-toolbar, .item-flags,
     .modal-overlay {
         display: none !important;
     }
-    .app-container, .section, #home { display: block !important; margin: 0 !important; padding: 0 !important; width: auto !important; }
+    .app-container, .section, #home { display: block !important; margin: 0 !important; padding: 0 !important; width: 80mm !important; }
     .swipe-wrap { overflow: visible !important; margin-bottom: 0 !important; page-break-inside: avoid; }
     .swipe-content { transform: none !important; height: auto !important; }
 
@@ -499,13 +512,13 @@ header h1 {
     /* Category headers: centered rule style */
     .category-header {
         border-bottom: none !important;
-        margin: 10px 0 4px 0 !important;
+        margin: 6px 0 4px 0 !important;
         padding: 0 !important;
         font-size: 12pt !important;
         font-weight: bold !important;
         text-transform: uppercase !important;
         text-align: center !important;
-        color: black !important;
+        color: #000 !important;
     }
     .category-header::before { content: "-- "; }
     .category-header::after { content: " --"; }
@@ -521,6 +534,7 @@ header h1 {
         border-radius: 0 !important;
         transform: none !important;
         page-break-inside: avoid;
+        page-break-after: avoid;
     }
     .card::before { content: "• "; }
     .item-info {
@@ -533,7 +547,7 @@ header h1 {
     .item-name {
         font-size: 10pt !important;
         font-weight: bold !important;
-        color: black !important;
+        color: #000 !important;
         overflow: hidden;
         text-overflow: ellipsis;
     }
@@ -542,7 +556,7 @@ header h1 {
         font-weight: normal !important;
         background: none !important;
         padding: 0 !important;
-        color: black !important;
+        color: #000 !important;
         white-space: nowrap !important;
         flex-shrink: 0 !important;
         margin-left: auto !important;
@@ -558,7 +572,8 @@ header h1 {
         padding-top: 6px;
     }
     #home::after {
-        content: "*** END OF LIST ***\A    Thank you!    ";
+        /* Trailing feed so the printer's auto-cutter cuts cleanly on one strip */
+        content: "*** END OF LIST ***\A    Thank you!    \A\A\A\A\A\A\A\A";
         display: block;
         text-align: center;
         margin-top: 10px;
