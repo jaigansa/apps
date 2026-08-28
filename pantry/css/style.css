@@ -463,8 +463,10 @@ header h1 {
         background: #fff !important;
         color: #000 !important;
         width: 74mm !important;
+        height: auto !important;
         padding: 0 !important;
         margin: 0 !important;
+        overflow: visible !important;
         font-family: 'Courier New', ui-monospace, monospace !important;
         font-size: 10pt !important;
         line-height: 1.4 !important;
@@ -484,7 +486,7 @@ header h1 {
     .modal-overlay {
         display: none !important;
     }
-    .app-container, .section, #home { display: block !important; margin: 0 !important; padding: 0 !important; width: 74mm !important; }
+    .app-container, .section, #home { display: block !important; margin: 0 !important; padding: 0 !important; width: 74mm !important; height: auto !important; overflow: visible !important; }
     .swipe-wrap { overflow: visible !important; margin-bottom: 0 !important; break-inside: avoid; page-break-inside: avoid; }
     .swipe-content { transform: none !important; height: auto !important; }
 
