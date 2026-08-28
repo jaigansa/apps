@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ta" data-theme="classic">
+<html lang="ta">
 
 <head>
   <meta charset="utf-8">
@@ -29,29 +29,11 @@
           <span>தமிழ் கணிப்பொறி</span>
         </h1>
         <div class="header-actions">
-          <button id="sound-toggle-btn" class="action-btn" onclick="toggleSound()" title="ஒலி (Sound)">
-            <i class="bi bi-volume-mute-fill"></i>
-          </button>
-          <button class="action-btn" onclick="toggleThemePicker()" title="தீம் / வண்ணம் (Color Themes)">
-            <i class="bi bi-palette-fill"></i>
+          <button class="action-btn" onclick="copyTamilResult()" title="தமிழ் விடையை நகலெடு (Copy Tamil Result)">
+            <i class="bi bi-clipboard"></i>
           </button>
         </div>
       </header>
-
-      <!-- Theme Selector Bar -->
-      <div id="theme-picker-bar" class="theme-picker-bar">
-        <span class="theme-label">வண்ணம் (Color Theme):</span>
-        <div class="theme-chips">
-          <button class="theme-chip active" data-t="classic" onclick="setTheme('classic')" title="பழைய வண்ணங்கள் (Classic Old Buttons)"></button>
-          <button class="theme-chip" data-t="dark" onclick="setTheme('dark')" title="டார்க் (Dark)"></button>
-          <button class="theme-chip" data-t="light" onclick="setTheme('light')" title="லைட் (Light)"></button>
-          <button class="theme-chip" data-t="cyber" onclick="setTheme('cyber')" title="சைபர் (Cyber)"></button>
-        </div>
-        <div class="custom-color-wrapper" title="விருப்ப வண்ணம் (Pick Custom Color)">
-          <i class="bi bi-pipette text-muted" style="font-size: 0.85rem;"></i>
-          <input type="color" id="custom-color-picker" class="custom-color-input" value="#ffb703" onchange="setCustomColor(this.value)">
-        </div>
-      </div>
 
       <!-- Compact Dual Display -->
       <div class="display-container">
@@ -61,9 +43,6 @@
         <div class="tamil-display-group">
           <span class="badge-tamil"><i class="bi bi-translate me-1"></i>தமிழ்</span>
           <input type="text" id="tam-dis" class="tamil-value border-0 bg-transparent" value="௦" readonly aria-label="tamil-display">
-          <button class="copy-btn me-1" onclick="copyTamilResult()" title="நகலெடு (Copy Tamil Result)">
-            <i class="bi bi-clipboard"></i>
-          </button>
         </div>
 
         <!-- English Digits Input / Output -->
