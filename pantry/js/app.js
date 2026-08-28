@@ -786,7 +786,11 @@ const UI = {
     buildSmsBody() {
         const list = Store.getActiveList();
         if (!list) return null;
-        const items = Store.getActiveItems().filter(i => !i.purchased);
+        const items = Store.getActiveItems();
+        if (!items || items.length === 0) {
+            Toast.show('Your list is empty.');
+            return null;
+        }
 
         const groups = {};
         items.forEach(i => {
