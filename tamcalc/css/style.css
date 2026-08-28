@@ -1,7 +1,491 @@
+/* TamCalc Modern Compact & Touch-Friendly Styles */
+
 :root {
-    --background: #ecf0f3;
-    --accent:#3DD1E7;
+  --font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  --card-bg: #1e293b;
+  --card-border: rgba(255, 255, 255, 0.1);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --display-bg: #0f172a;
+  --display-border: rgba(255, 255, 255, 0.15);
+  
+  /* Classic Old Buttons Palette (Default) */
+  --btn-num-bg: #ffb703;
+  --btn-num-color: #1e293b;
+  --btn-num-shadow: rgba(255, 183, 3, 0.3);
+  
+  --btn-op-bg: #10b981;
+  --btn-op-color: #ffffff;
+  --btn-op-shadow: rgba(16, 185, 129, 0.3);
+  
+  --btn-danger-bg: #ef4444;
+  --btn-danger-color: #ffffff;
+  --btn-danger-shadow: rgba(239, 68, 68, 0.3);
+  
+  --btn-eq-bg: #3b82f6;
+  --btn-eq-color: #ffffff;
+  --btn-eq-shadow: rgba(59, 130, 246, 0.4);
 }
 
+/* Theme Presets */
+[data-theme="classic"] {
+  --bg-gradient: linear-gradient(135deg, #18181b 0%, #27272a 100%);
+  --card-bg: #27272a;
+  --card-border: rgba(255, 255, 255, 0.1);
+  --text-main: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --display-bg: #18181b;
+  
+  --btn-num-bg: #f59e0b;
+  --btn-num-color: #000000;
+  --btn-op-bg: #10b981;
+  --btn-op-color: #ffffff;
+  --btn-danger-bg: #ef4444;
+  --btn-danger-color: #ffffff;
+  --btn-eq-bg: #2563eb;
+  --btn-eq-color: #ffffff;
+}
 
+[data-theme="dark"] {
+  --bg-gradient: linear-gradient(135deg, #090d16 0%, #111827 100%);
+  --card-bg: #1f2937;
+  --card-border: rgba(255, 255, 255, 0.08);
+  --text-main: #f9fafb;
+  --text-muted: #9ca3af;
+  --display-bg: #111827;
+  
+  --btn-num-bg: #374151;
+  --btn-num-color: #f9fafb;
+  --btn-op-bg: #4b5563;
+  --btn-op-color: #60a5fa;
+  --btn-danger-bg: #991b1b;
+  --btn-danger-color: #fca5a5;
+  --btn-eq-bg: #2563eb;
+  --btn-eq-color: #ffffff;
+}
 
+[data-theme="light"] {
+  --bg-gradient: linear-gradient(135deg, #e2e8f0 0%, #f1f5f9 100%);
+  --card-bg: #ffffff;
+  --card-border: rgba(0, 0, 0, 0.08);
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --display-bg: #f8fafc;
+  --display-border: rgba(0, 0, 0, 0.1);
+  
+  --btn-num-bg: #f1f5f9;
+  --btn-num-color: #0f172a;
+  --btn-op-bg: #e2e8f0;
+  --btn-op-color: #0284c7;
+  --btn-danger-bg: #fee2e2;
+  --btn-danger-color: #dc2626;
+  --btn-eq-bg: #0284c7;
+  --btn-eq-color: #ffffff;
+}
+
+[data-theme="cyber"] {
+  --bg-gradient: linear-gradient(135deg, #13002b 0%, #2a0845 100%);
+  --card-bg: #210d38;
+  --card-border: rgba(236, 72, 153, 0.3);
+  --text-main: #f472b6;
+  --text-muted: #c084fc;
+  --display-bg: #0d021a;
+  --display-border: rgba(236, 72, 153, 0.4);
+  
+  --btn-num-bg: #3b0764;
+  --btn-num-color: #f472b6;
+  --btn-op-bg: #581c87;
+  --btn-op-color: #38bdf8;
+  --btn-danger-bg: #be123c;
+  --btn-danger-color: #ffffff;
+  --btn-eq-bg: #ec4899;
+  --btn-eq-color: #ffffff;
+}
+
+body {
+  font-family: var(--font-family);
+  background: var(--bg-gradient);
+  color: var(--text-main);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Compact Container */
+.calc-wrapper {
+  max-width: 420px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 12px 16px;
+}
+
+.calc-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+/* Header Compact Style */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.app-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.app-title i {
+  font-size: 1.5rem;
+  color: #ef4444;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--card-border);
+  color: var(--text-main);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover, .action-btn:active {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
+}
+
+/* Color Theme Picker Drawer / Toolbar */
+.theme-picker-bar {
+  display: none;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 16px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.theme-picker-bar.show {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.theme-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.theme-chips {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.theme-chip {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.theme-chip:hover {
+  transform: scale(1.15);
+}
+
+.theme-chip.active {
+  border-color: #ffffff;
+  box-shadow: 0 0 0 2px var(--btn-eq-bg);
+}
+
+.theme-chip[data-t="classic"] { background: linear-gradient(135deg, #f59e0b, #10b981); }
+.theme-chip[data-t="dark"] { background: linear-gradient(135deg, #111827, #374151); }
+.theme-chip[data-t="light"] { background: linear-gradient(135deg, #ffffff, #e2e8f0); }
+.theme-chip[data-t="cyber"] { background: linear-gradient(135deg, #ec4899, #8b5cf6); }
+
+.custom-color-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.custom-color-input {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--card-border);
+  border-radius: 50%;
+  cursor: pointer;
+  background: transparent;
+}
+
+/* Display Section */
+.display-container {
+  background: var(--display-bg);
+  border: 1px solid var(--display-border, rgba(255, 255, 255, 0.1));
+  border-radius: 16px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.25);
+  position: relative;
+}
+
+.expression-line {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  min-height: 20px;
+  text-align: right;
+  overflow-x: auto;
+  white-space: nowrap;
+  margin-bottom: 4px;
+}
+
+.tamil-display-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.badge-tamil {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.tamil-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #38bdf8;
+  text-align: right;
+  width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  letter-spacing: 1px;
+}
+
+.digits-display-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.badge-digits {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.digits-value {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text-main);
+  text-align: right;
+  width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  font-family: "Courier New", Courier, monospace;
+}
+
+.copy-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.copy-btn:hover {
+  color: var(--text-main);
+}
+
+/* Touch-Optimized Compact Grid */
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.calc-btn {
+  border: none;
+  border-radius: 14px;
+  padding: 12px 6px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 58px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.08s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s, box-shadow 0.15s;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.calc-btn .tam-sub {
+  font-size: 0.75rem;
+  opacity: 0.85;
+  margin-bottom: 1px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.calc-btn .eng-main {
+  font-size: 1.25rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+/* Button Variants */
+.calc-btn.btn-num {
+  background: var(--btn-num-bg);
+  color: var(--btn-num-color);
+  box-shadow: 0 4px 10px var(--btn-num-shadow, rgba(0,0,0,0.15));
+}
+
+.calc-btn.btn-op {
+  background: var(--btn-op-bg);
+  color: var(--btn-op-color);
+  box-shadow: 0 4px 10px var(--btn-op-shadow, rgba(0,0,0,0.15));
+}
+
+.calc-btn.btn-danger {
+  background: var(--btn-danger-bg);
+  color: var(--btn-danger-color);
+  box-shadow: 0 4px 10px var(--btn-danger-shadow, rgba(0,0,0,0.15));
+}
+
+.calc-btn.btn-eq {
+  background: var(--btn-eq-bg);
+  color: var(--btn-eq-color);
+  box-shadow: 0 4px 12px var(--btn-eq-shadow, rgba(0,0,0,0.25));
+  grid-column: span 2;
+}
+
+/* Touch & Hover Interaction */
+.calc-btn:hover {
+  filter: brightness(1.06);
+}
+
+.calc-btn:active, .calc-btn.active-touch {
+  transform: scale(0.93) translateY(2px);
+  filter: brightness(0.9);
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Toast feedback notification */
+.toast-msg {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #10b981;
+  color: #ffffff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 9999;
+}
+
+.toast-msg.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Footer Styling */
+footer {
+  margin-top: auto;
+  padding: 16px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.social-links a {
+  color: var(--text-muted);
+  margin: 0 8px;
+  font-size: 1.1rem;
+  transition: color 0.2s;
+}
+
+.social-links a:hover {
+  color: var(--text-main);
+}
+
+/* Responsive adjust */
+@media (max-width: 400px) {
+  .calc-wrapper {
+    padding: 8px;
+  }
+  .calc-card {
+    padding: 14px;
+    border-radius: 20px;
+  }
+  .calc-grid {
+    gap: 8px;
+  }
+  .calc-btn {
+    min-height: 52px;
+    font-size: 1rem;
+  }
+  .tamil-value {
+    font-size: 1.35rem;
+  }
+  .digits-value {
+    font-size: 1.2rem;
+  }
+}
