@@ -453,7 +453,7 @@ header h1 {
 #print-qr { display: none !important; }
 
 @media print {
-    @page { size: 80mm 297mm; margin: 0; }
+    @page { size: 80mm 297mm; margin: 0 3mm; }
     html {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
@@ -462,7 +462,7 @@ header h1 {
     html, body {
         background: #fff !important;
         color: #000 !important;
-        width: 80mm !important;
+        width: 74mm !important;
         padding: 0 !important;
         margin: 0 !important;
         font-family: 'Courier New', ui-monospace, monospace !important;
@@ -484,7 +484,7 @@ header h1 {
     .modal-overlay {
         display: none !important;
     }
-    .app-container, .section, #home { display: block !important; margin: 0 !important; padding: 0 !important; width: 80mm !important; }
+    .app-container, .section, #home { display: block !important; margin: 0 !important; padding: 0 !important; width: 74mm !important; }
     .swipe-wrap { overflow: visible !important; margin-bottom: 0 !important; page-break-inside: avoid; }
     .swipe-content { transform: none !important; height: auto !important; }
 
