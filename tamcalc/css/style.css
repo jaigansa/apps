@@ -135,7 +135,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
 }
 
 .badge-tamil {
@@ -147,6 +147,23 @@ body {
   font-weight: 600;
 }
 
+.mode-toggle-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: var(--text-main);
+}
+
 .tamil-value {
   font-size: 1.6rem;
   font-weight: 700;
@@ -156,6 +173,17 @@ body {
   overflow-x: auto;
   white-space: nowrap;
   letter-spacing: 1px;
+}
+
+.tamil-words-line {
+  font-size: 0.8rem;
+  color: #34d399;
+  text-align: right;
+  min-height: 20px;
+  margin-bottom: 8px;
+  overflow-x: auto;
+  white-space: nowrap;
+  font-weight: 500;
 }
 
 .digits-display-group {

@@ -39,11 +39,19 @@
       <div class="display-container">
         <div id="expression-line" class="expression-line"></div>
 
-        <!-- Tamil Numeral Output -->
+        <!-- Tamil Numeral Output & Mode Switcher -->
         <div class="tamil-display-group">
-          <span class="badge-tamil"><i class="bi bi-translate me-1"></i>தமிழ்</span>
+          <div class="d-flex align-items-center gap-1">
+            <span class="badge-tamil"><i class="bi bi-translate me-1"></i>தமிழ்</span>
+            <button class="mode-toggle-btn" onclick="toggleTamilSystemMode()" title="தமிழ் எண் முறைமை மாற்று (Toggle Traditional / Modern)">
+              <span id="mode-btn-text">மரபு</span> <i class="bi bi-arrow-repeat ms-1"></i>
+            </button>
+          </div>
           <input type="text" id="tam-dis" class="tamil-value border-0 bg-transparent" value="௦" readonly aria-label="tamil-display">
         </div>
+
+        <!-- Tamil Words Pronunciation Line -->
+        <div id="tam-words" class="tamil-words-line">பூஜ்யம்</div>
 
         <!-- English Digits Input / Output -->
         <div class="digits-display-group">
