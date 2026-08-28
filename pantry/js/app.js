@@ -693,7 +693,8 @@ const UI = {
         });
         if (categoryFilterSelect) categoryFilterSelect.addEventListener('change', (e) => {
             this.selectedCategoryFilter = e.target.value;
-            categoryFilterSelect.classList.toggle('active', e.target.value !== 'all');
+            const catBtn = document.getElementById('filter-cat-btn');
+            if (catBtn) catBtn.classList.toggle('active', e.target.value !== 'all');
             this.render();
         });
         if (filterFavBtn) filterFavBtn.addEventListener('click', () => {
