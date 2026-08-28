@@ -158,13 +158,14 @@ const Store = {
     },
 
     clearAll() {
-        if (confirm('Are you sure you want to delete ALL lists and data? This cannot be undone.')) {
+        Confirm.open('Delete ALL lists and data? This cannot be undone.', { title: 'Clear All Data', okText: 'Delete All' }).then((ok) => {
+            if (!ok) return;
             const db = { lists: [this.defaultList()], items: [], activeListId: 'list_default', favorites: [] };
             this.saveDB(db);
             UI.render();
             UI.updateDashboard();
             UI.renderLists();
-        }
+        });
     },
 
     /* --- Favorites --- */
@@ -294,19 +295,30 @@ const Store = {
         const list = db.lists.find(l => l.id === id);
         if (!list) return;
         if (list.archived) {
-            if (!confirm(`Permanently delete history "${list.name}"?`)) return;
-            db.lists = db.lists.filter(l => l.id !== id);
-            db.items = db.items.filter(i => i.listId !== id);
+            Confirm.open(`Permanently delete history "${list.name}"?`, { title: 'Delete History', okText: 'Delete' }).then((ok) => {
+                if (!ok) return;
+                const d = this.getDB();
+                d.lists = d.lists.filter(l => l.id !== id);
+                d.items = d.items.filter(i => i.listId !== id);
+                if (d.activeListId === id) d.activeListId = d.lists[0].id;
+                this.saveDB(d);
+                UI.render();
+                UI.updateDashboard();
+                UI.renderLists();
+            });
         } else {
-            if (!confirm(`Delete "${list.name}" and all its items?`)) return;
-            db.lists = db.lists.filter(l => l.id !== id);
-            db.items = db.items.filter(i => i.listId !== id);
+            Confirm.open(`Delete "${list.name}" and all its items?`, { title: 'Delete List', okText: `Delete ${list.name}` }).then((ok) => {
+                if (!ok) return;
+                const d = this.getDB();
+                d.lists = d.lists.filter(l => l.id !== id);
+                d.items = d.items.filter(i => i.listId !== id);
+                if (d.activeListId === id) d.activeListId = d.lists[0].id;
+                this.saveDB(d);
+                UI.render();
+                UI.updateDashboard();
+                UI.renderLists();
+            });
         }
-        if (db.activeListId === id) db.activeListId = db.lists[0].id;
-        this.saveDB(db);
-        UI.render();
-        UI.updateDashboard();
-        UI.renderLists();
     },
 
     archiveList(id) {
@@ -373,6 +385,50 @@ const Store = {
             }));
             db.items = items;
             this.saveDB(db);
+        }
+    }
+};
+
+/* --- CONFIRM DIALOG (custom delete confirm) --- */
+const Confirm = {
+    _resolve: null,
+    _el: null,
+
+    init() {
+        this._el = document.getElementById('confirm-modal');
+        if (!this._el) return;
+
+        const ok = document.getElementById('confirm-ok');
+        const cancel = document.getElementById('confirm-cancel');
+        if (ok) ok.addEventListener('click', () => this.close(true));
+        if (cancel) cancel.addEventListener('click', () => this.close(false));
+        this._el.addEventListener('click', (e) => {
+            if (e.target === this._el) this.close(false);
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this._el && this._el.classList.contains('open')) this.close(false);
+        });
+    },
+
+    open(message, opts = {}) {
+        if (!this._el) return Promise.resolve(false);
+        const { title = 'Are you sure?', okText = 'Delete' } = opts;
+        const titleEl = document.getElementById('confirm-title');
+        const msgEl = document.getElementById('confirm-message');
+        const okBtn = document.getElementById('confirm-ok');
+        if (titleEl) titleEl.textContent = title;
+        if (msgEl) msgEl.textContent = message;
+        if (okBtn) okBtn.textContent = okText;
+        this._el.classList.add('open');
+        return new Promise((resolve) => { this._resolve = resolve; });
+    },
+
+    close(result) {
+        if (!this._el) return;
+        this._el.classList.remove('open');
+        if (this._resolve) {
+            this._resolve(result);
+            this._resolve = null;
         }
     }
 };
@@ -556,8 +612,10 @@ const UI = {
     deleteItem(id) {
         const item = Store.getAll().find(i => i.id === id);
         if (!item) return;
-        if (!confirm(`Delete "${item.name}"?`)) return;
-        Store.delete(id);
+        Confirm.open(`Delete "${item.name}"?`, { title: 'Delete Item', okText: `Delete ${item.name}` }).then((ok) => {
+            if (!ok) return;
+            Store.delete(id);
+        });
     },
 
     /* --- Modals --- */
@@ -641,8 +699,10 @@ const UI = {
     deleteItemSwipe(id) {
         const item = Store.getAll().find(i => i.id === id);
         if (!item) return;
-        if (!confirm(`Delete "${item.name}"?`)) return;
-        Store.delete(id);
+        Confirm.open(`Delete "${item.name}"?`, { title: 'Delete Item', okText: `Delete ${item.name}` }).then((ok) => {
+            if (!ok) return;
+            Store.delete(id);
+        });
     },
 
     attachGestures(swipeWrap, item) {
@@ -1034,6 +1094,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     UI.init();
+    Confirm.init();
 
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);

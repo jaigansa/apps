@@ -978,6 +978,21 @@ header h1 {
     padding: 12px;
 }
 
+/* --- Confirm Dialog --- */
+.confirm-title { color: var(--text-main); }
+.confirm-message { word-break: break-word; }
+#confirm-ok.btn-danger {
+    margin-top: var(--space-3);
+    background: var(--primary-gradient);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+[data-theme="light"] #confirm-ok.btn-danger {
+    background: linear-gradient(135deg, #F87171, #EF4444);
+}
+[data-theme="dark"] #confirm-ok.btn-danger {
+    background: linear-gradient(135deg, #F87171, #EF4444);
+}
+
 /* --- Dashboard progress --- */
 .dashboard-stats { margin-bottom: var(--space-6); }
 

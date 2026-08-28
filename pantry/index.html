@@ -255,6 +255,16 @@
         </div>
     </div>
 
+    <!-- Confirm Dialog -->
+    <div id="confirm-modal" class="modal-overlay flex-center" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
+        <div class="modal-content" style="width:90%; max-width:350px; border-radius:var(--radius-lg); transform:scale(0.9); padding:24px;">
+            <h3 id="confirm-title" class="confirm-title" style="margin:0 0 12px 0; text-align:center; font-size:1.3rem;">Are you sure?</h3>
+            <p id="confirm-message" class="confirm-message" style="margin:0 0 24px 0; text-align:center; color:var(--text-secondary); font-size:0.95rem; line-height:1.5;"></p>
+            <button type="button" id="confirm-cancel" class="btn-block modal-cancel" style="padding:12px;">Cancel</button>
+            <button type="button" id="confirm-ok" class="btn-block btn-danger" style="padding:14px;">Delete</button>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="js/lucide.min.js"></script>
     <script src="js/hammer.min.js"></script>
