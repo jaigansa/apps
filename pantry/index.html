@@ -68,13 +68,18 @@
             <!-- List Toolbar: Compact Integrated Search, Category & Favorites Filter -->
             <div class="list-toolbar mb-16">
                 <div class="search-wrap compact-search-wrap">
-                    <i data-lucide="search" width="18" height="18" class="search-icon"></i>
+                    <i data-lucide="search" width="18" height="18" class="search-icon flex-shrink-0"></i>
                     <input type="text" id="search-input" class="form-control compact-input" placeholder="Search item or category...">
                     
                     <div class="search-controls">
+                        <!-- Clear Search Text -->
+                        <button type="button" id="search-clear" class="search-clear" aria-label="Clear search">
+                            <i data-lucide="x" width="16" height="16"></i>
+                        </button>
+
                         <!-- Favorites Quick Toggle -->
-                        <button type="button" id="filter-fav-btn" class="search-ctrl-btn" title="Filter Favorites" aria-label="Filter Favorites">
-                            <i data-lucide="star" width="15" height="15"></i>
+                        <button type="button" id="filter-fav-btn" class="search-ctrl-btn fav-btn" title="Filter Favorites" aria-label="Filter Favorites">
+                            <i data-lucide="heart" width="16" height="16"></i>
                         </button>
 
                         <!-- Category Select Dropdown -->
@@ -91,11 +96,6 @@
                             </select>
                             <i data-lucide="chevron-down" width="12" height="12" class="select-arrow"></i>
                         </div>
-
-                        <!-- Clear Search Text -->
-                        <button type="button" id="search-clear" class="search-clear" aria-label="Clear search">
-                            <i data-lucide="x" width="16" height="16"></i>
-                        </button>
                     </div>
                 </div>
             </div>
