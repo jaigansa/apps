@@ -1065,6 +1065,17 @@ header h1 {
     text-align: center;
     margin: 4px 0 18px 0;
 }
+.qr-overflow {
+    font-size: 0.85rem;
+    color: var(--danger-color);
+    line-height: 1.5;
+    text-align: center;
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin: 4px 0 12px 0;
+}
 .qr-import-status {
     font-size: 0.85rem;
     font-weight: 600;

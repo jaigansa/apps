@@ -665,6 +665,51 @@ const UI = {
     },
 
     /* --- QR Share / Import --- */
+    escField(s) {
+        return String(s == null ? '' : s)
+            .split('%').join('%25')
+            .split('~').join('%7E')
+            .split('|').join('%7C');
+    },
+    unescField(s) {
+        return String(s == null ? '' : s)
+            .split('%7C').join('|')
+            .split('%7E').join('~')
+            .split('%25').join('%');
+    },
+
+    // Compact byte-mode payload: P1|<listName>~name|qty|unit|cat~name|qty|unit|cat...
+    buildCompactPayload(listId) {
+        const list = Store.getLists().find(l => l.id === listId);
+        if (!list) return null;
+        const part = (v) => this.escField(String(v == null ? '' : v));
+        const head = 'P1|' + part(list.name);
+        const items = Store.getAll()
+            .filter(i => i.listId === listId)
+            .map(i => `${part(i.name)}|${part(i.quantity != null ? i.quantity : 1)}|${part(i.unit || 'nos')}|${part(i.category || 'General')}`);
+        return head + (items.length ? '~' + items.join('~') : '');
+    },
+
+    parseCompactPayload(text) {
+        let data = String(text || '').trim();
+        if (!data || data.indexOf('P1|') !== 0) return null;
+        const groups = data.split('~');
+        const head = groups.shift() || '';
+        const meta = head.split('|');
+        const listName = this.unescField(meta[1] || '');
+        const items = groups.map((g, idx) => {
+            const p = g.split('|');
+            return {
+                name: this.unescField(p[0] || ''),
+                qty: isFinite(Number(p[1])) && Number(p[1]) > 0 ? Number(p[1]) : 1,
+                unit: this.unescField(p[2] || 'nos'),
+                category: this.unescField(p[3] || 'General'),
+                _idx: idx
+            };
+        });
+        return { app: 'pantry', v: 1, list: { name: listName }, items };
+    },
+
     buildListPayload(listId) {
         const list = Store.getLists().find(l => l.id === listId);
         if (!list) return null;
@@ -688,11 +733,27 @@ const UI = {
         return new TextDecoder().decode(bytes);
     },
 
+    makeQr(text) {
+        // Try error-correction M first, fall back to L (more capacity) on overflow.
+        const attempts = ['M', 'L'];
+        for (let i = 0; i < attempts.length; i++) {
+            const qr = qrcode(0, attempts[i]);
+            qr.addData(text, 'Byte');
+            try {
+                qr.make();
+                return qr;
+            } catch (e) {
+                if (i === attempts.length - 1) throw e;
+            }
+        }
+        return null;
+    },
+
     openQrModal(listId) {
-        const payload = this.buildListPayload(listId);
+        const payload = this.buildCompactPayload(listId);
         const list = Store.getLists().find(l => l.id === listId);
         if (!payload || !list) return;
-        this.currentQrPayload = this.encodePayload(payload);
+        this.currentQrPayload = payload;
 
         const nameEl = document.getElementById('qr-list-name');
         if (nameEl) nameEl.textContent = list.name;
@@ -700,17 +761,31 @@ const UI = {
         if (countEl) countEl.textContent = String(Store.getAll().filter(i => i.listId === listId).length);
 
         const stage = document.getElementById('qr-stage');
-        if (stage) {
-            stage.innerHTML = '';
-            if (typeof qrcode === 'function') {
-                const qr = qrcode(0, 'M');
-                qr.addData(this.currentQrPayload);
-                qr.make();
-                const svg = qr.createSvgTag(6, 4);
-                stage.innerHTML = svg;
-            } else {
-                stage.innerHTML = '<span style="color:var(--text-secondary);font-size:0.85rem;">QR library not loaded</span>';
+        const notice = document.getElementById('qr-overflow');
+        const desc = document.getElementById('qr-modal-desc');
+        if (stage) stage.innerHTML = '';
+        if (notice) notice.style.display = 'none';
+        if (desc) desc.style.display = 'block';
+
+        if (stage && typeof qrcode === 'function') {
+            let rendered = false;
+            try {
+                const qr = this.makeQr(payload);
+                if (qr) {
+                    const svg = qr.createSvgTag(6, 4);
+                    stage.innerHTML = svg;
+                    rendered = true;
+                }
+            } catch (e) {
+                rendered = false;
             }
+            if (!rendered) {
+                stage.innerHTML = '<span style="color:var(--text-secondary);font-size:0.85rem;">QR too large</span>';
+                if (notice) notice.style.display = 'block';
+                if (desc) desc.style.display = 'none';
+            }
+        } else if (stage) {
+            stage.innerHTML = '<span style="color:var(--text-secondary);font-size:0.85rem;">QR library not loaded</span>';
         }
 
         document.getElementById('qr-modal').classList.add('open');
@@ -722,9 +797,22 @@ const UI = {
 
     copyQrPayload() {
         if (!this.currentQrPayload) return;
-        navigator.clipboard && navigator.clipboard.writeText(this.currentQrPayload)
-            .then(() => { const s = document.getElementById('qr-import-status'); if (s) { s.className = 'qr-import-status ok'; s.textContent = 'Payload copied to clipboard.'; } else { alert('Payload copied to clipboard.'); } })
-            .catch(() => alert('Copy failed. Enable clipboard permission.'));
+        const doCopy = (text) => {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text)
+                    .then(() => Toast.show('Payload copied to clipboard.'))
+                    .catch(() => Toast.show('Copy failed. Enable clipboard permission.'));
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                try { document.execCommand('copy'); Toast.show('Payload copied to clipboard.'); }
+                catch (e) { Toast.show('Copy failed.'); }
+                document.body.removeChild(ta);
+            }
+        };
+        doCopy(this.currentQrPayload);
     },
 
     openQrImportModal() {
@@ -743,9 +831,16 @@ const UI = {
     parsePayloadText(text) {
         let data = String(text || '').trim();
         if (!data) return null;
+        // New compact format first: P1|list~item...
+        if (data.indexOf('P1|') === 0) {
+            return this.parseCompactPayload(data);
+        }
+        // Legacy format: base64 JSON or raw JSON
         try {
             if (this.isBase64ish(data)) data = this.decodePayload(data);
-            return JSON.parse(data);
+            const obj = JSON.parse(data);
+            if (obj && obj.list && Array.isArray(obj.items)) return obj;
+            return null;
         } catch (e) {
             return null;
         }

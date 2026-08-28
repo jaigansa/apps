@@ -283,7 +283,8 @@
             </div>
             <div class="qr-sub"><span id="qr-list-name"></span> · <span id="qr-list-count"></span> items</div>
             <div class="qr-stage" id="qr-stage"><!-- QR injected here --></div>
-            <p class="qr-desc">Scan this code with a phone camera, another copy of this app, or a QR reader to share this grocery list.</p>
+            <p id="qr-overflow" class="qr-overflow" style="display:none;">This list is too large for a single QR code. Use <b>Copy Payload</b> to share it by pasting into another copy of this app.</p>
+            <p class="qr-desc" id="qr-modal-desc">Scan this code with a phone camera, another copy of this app, or a QR reader to share this grocery list.</p>
             <div class="flex gap-10" style="margin-bottom:0;">
                 <button type="button" class="btn-block btn-soft flex-1" style="padding:12px; font-size:0.95rem;" onclick="UI.copyQrPayload()">Copy Payload</button>
                 <button type="button" class="btn-block modal-cancel flex-1" onclick="UI.closeQrModal()" style="font-size:0.95rem; padding:12px;">Close</button>
