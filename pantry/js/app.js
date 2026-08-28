@@ -480,6 +480,10 @@ const UI = {
         const settingsBtn = document.getElementById('settings-btn');
         if (settingsBtn) settingsBtn.addEventListener('click', () => this.openSettings());
 
+        // Share active list (SMS on mobile, copy on desktop)
+        const shareBtn = document.getElementById('share-btn');
+        if (shareBtn) shareBtn.addEventListener('click', () => this.shareActiveList());
+
         // FAB: click = add item, long press = print
         const fab = document.getElementById('fab-add');
         let fabPressTimer = null;
@@ -748,6 +752,40 @@ const UI = {
             .filter(i => i.listId === listId)
             .map(i => `${part(i.name)}|${part(i.quantity != null ? i.quantity : 1)}|${part(i.unit || 'nos')}|${part(i.category || 'General')}`);
         return head + (items.length ? '~' + items.join('~') : '');
+    },
+
+    /* --- Share active list (SMS on mobile / copy on desktop) --- */
+    shareActiveList() {
+        const listId = Store.getActiveListId();
+        const payload = this.buildCompactPayload(listId);
+        const list = Store.getLists().find(l => l.id === listId);
+        if (!payload || !list) return;
+        const isMobile = /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent)
+            || ('ontouchstart' in window && window.innerWidth < 768);
+        if (isMobile) {
+            const body = `Grocery list ${list.name}:\n${payload}\n\nImport: Pantry > Data > Import via QR (paste)`;
+            location.href = 'sms:?&body=' + encodeURIComponent(body);
+        } else {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(payload)
+                    .then(() => Toast.show('List copied — paste into the other device\'s Pantry.'))
+                    .catch(() => this.fallbackCopy(payload));
+            } else {
+                this.fallbackCopy(payload);
+            }
+        }
+    },
+
+    fallbackCopy(text) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand('copy'); Toast.show('List copied to clipboard.'); }
+        catch (e) { Toast.show('Copy failed — select and copy the text manually.'); }
+        document.body.removeChild(ta);
     },
 
     parseCompactPayload(text) {
