@@ -782,8 +782,7 @@ const UI = {
         location.href = 'sms:?&body=' + encodeURIComponent(body);
     },
 
-    // Readable, aligned SMS body: each item on its own line, the importable
-    // payload on a final single line so the sender can paste it back into Pantry.
+    // Readable, aligned SMS body: a clean formatted list only (no raw payload).
     buildSmsBody() {
         const list = Store.getActiveList();
         if (!list) return null;
@@ -813,9 +812,6 @@ const UI = {
             });
         });
         lines.push('────────────────');
-        lines.push('');
-        lines.push('Add to Pantry: paste the line starting with "P1|" into Data → Import via QR');
-        lines.push(this.buildCompactPayload(list.id));
 
         return lines.join('\n');
     },
