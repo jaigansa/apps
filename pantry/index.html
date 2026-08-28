@@ -6,6 +6,15 @@
     <title>Pantry · Grocery List</title>
     <meta name="theme-color" content="#2E7D32">
     <link rel="manifest" href="manifest.json">
+    <script>
+        // Apply the saved theme before first paint to avoid a color/border flash on load.
+        (function () {
+            try {
+                var t = localStorage.getItem('theme') || 'light';
+                document.documentElement.setAttribute('data-theme', t);
+            } catch (e) { /* ignore */ }
+        })();
+    </script>
     <link rel="stylesheet" href="css/style.css">
     <!-- Icon for Apple devices -->
     <link rel="apple-touch-icon" href="assets/icon-192.png">
