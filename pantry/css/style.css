@@ -1035,6 +1035,46 @@ header h1 {
     background: linear-gradient(135deg, #F87171, #EF4444);
 }
 
+/* --- QR Share / Import modals --- */
+.qr-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+.qr-title { font-size: var(--fs-lg); font-weight: 800; color: var(--text-main); }
+.qr-sub { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px; text-align: center; }
+.qr-stage {
+    background: #fff;
+    border-radius: var(--radius-md);
+    padding: 16px;
+    margin: 8px 0 14px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 180px;
+    border: 1px solid var(--border-color);
+}
+.qr-stage svg { width: 200px; height: 200px; max-width: 100%; }
+.qr-stage img { width: 200px; height: 200px; max-width: 100%; }
+.qr-stage canvas { width: 200px; height: 200px; max-width: 100%; image-rendering: pixelated; }
+.qr-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    text-align: center;
+    margin: 4px 0 18px 0;
+}
+.qr-import-status {
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-height: 18px;
+    margin-top: 8px;
+    text-align: center;
+}
+.qr-import-status.ok { color: var(--primary-color); }
+.qr-import-status.err { color: var(--danger-color); }
+
 /* --- Dashboard progress --- */
 .dashboard-stats { margin-bottom: var(--space-6); }
 

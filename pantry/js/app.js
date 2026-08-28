@@ -433,6 +433,25 @@ const Confirm = {
     }
 };
 
+/* --- TOAST (transient notice) --- */
+const Toast = {
+    _timer: null,
+    _el: null,
+    init() {
+        this._el = document.getElementById('print-hint');
+        if (!this._el) return;
+        this._el.classList.add('toast');
+    },
+    show(message, ms = 2400) {
+        if (!this._el) { alert(message); return; }
+        this._el.textContent = message;
+        this._el.classList.add('toast');
+        this._el.classList.add('show');
+        if (this._timer) clearTimeout(this._timer);
+        this._timer = setTimeout(() => this._el.classList.remove('show'), ms);
+    }
+};
+
 /* --- UI RENDERER --- */
 const UI = {
     editingItemId: null,
@@ -489,8 +508,17 @@ const UI = {
                     this.closeListModal();
                     this.closeNewListModal();
                     this.closeSettings();
+                    this.closeQrModal();
+                    this.closeQrImportModal();
                 }
             });
+        });
+
+        // Escape closes modals
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            if (document.getElementById('qr-modal').classList.contains('open')) this.closeQrModal();
+            if (document.getElementById('qr-import-modal').classList.contains('open')) this.closeQrImportModal();
         });
 
         // Theme Selector
@@ -634,6 +662,217 @@ const UI = {
         const el = document.getElementById('print-hint');
         if (!el) return;
         el.classList.remove('show');
+    },
+
+    /* --- QR Share / Import --- */
+    buildListPayload(listId) {
+        const list = Store.getLists().find(l => l.id === listId);
+        if (!list) return null;
+        const items = Store.getAll()
+            .filter(i => i.listId === listId)
+            .map(i => ({ name: i.name, qty: i.quantity, unit: i.unit || 'nos', category: i.category || 'General' }));
+        return JSON.stringify({ app: 'pantry', v: 1, list: { name: list.name }, items });
+    },
+
+    encodePayload(payload) {
+        const bytes = new TextEncoder().encode(payload);
+        let bin = '';
+        bytes.forEach(b => { bin += String.fromCharCode(b); });
+        return btoa(bin);
+    },
+
+    decodePayload(base64) {
+        const bin = atob(base64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return new TextDecoder().decode(bytes);
+    },
+
+    openQrModal(listId) {
+        const payload = this.buildListPayload(listId);
+        const list = Store.getLists().find(l => l.id === listId);
+        if (!payload || !list) return;
+        this.currentQrPayload = this.encodePayload(payload);
+
+        const nameEl = document.getElementById('qr-list-name');
+        if (nameEl) nameEl.textContent = list.name;
+        const countEl = document.getElementById('qr-list-count');
+        if (countEl) countEl.textContent = String(Store.getAll().filter(i => i.listId === listId).length);
+
+        const stage = document.getElementById('qr-stage');
+        if (stage) {
+            stage.innerHTML = '';
+            if (typeof qrcode === 'function') {
+                const qr = qrcode(0, 'M');
+                qr.addData(this.currentQrPayload);
+                qr.make();
+                const svg = qr.createSvgTag(6, 4);
+                stage.innerHTML = svg;
+            } else {
+                stage.innerHTML = '<span style="color:var(--text-secondary);font-size:0.85rem;">QR library not loaded</span>';
+            }
+        }
+
+        document.getElementById('qr-modal').classList.add('open');
+        this.refreshIcons();
+    },
+    closeQrModal() {
+        document.getElementById('qr-modal').classList.remove('open');
+    },
+
+    copyQrPayload() {
+        if (!this.currentQrPayload) return;
+        navigator.clipboard && navigator.clipboard.writeText(this.currentQrPayload)
+            .then(() => { const s = document.getElementById('qr-import-status'); if (s) { s.className = 'qr-import-status ok'; s.textContent = 'Payload copied to clipboard.'; } else { alert('Payload copied to clipboard.'); } })
+            .catch(() => alert('Copy failed. Enable clipboard permission.'));
+    },
+
+    openQrImportModal() {
+        const status = document.getElementById('qr-import-status');
+        if (status) { status.className = 'qr-import-status'; status.textContent = ''; }
+        const input = document.getElementById('qr-import-input');
+        if (input) input.value = this.currentQrPayload || '';
+        document.getElementById('qr-import-modal').classList.add('open');
+        this.refreshIcons();
+    },
+    closeQrImportModal() {
+        this.stopQrScan();
+        document.getElementById('qr-import-modal').classList.remove('open');
+    },
+
+    parsePayloadText(text) {
+        let data = String(text || '').trim();
+        if (!data) return null;
+        try {
+            if (this.isBase64ish(data)) data = this.decodePayload(data);
+            return JSON.parse(data);
+        } catch (e) {
+            return null;
+        }
+    },
+    isBase64ish(str) {
+        return /^[A-Za-z0-9+/=]+$/.test(str) && str.length > 8;
+    },
+
+    importQrInput() {
+        const input = document.getElementById('qr-import-input');
+        const status = document.getElementById('qr-import-status');
+        const payload = this.parsePayloadText(input ? input.value : '');
+        if (!payload) {
+            if (status) { status.className = 'qr-import-status err'; status.textContent = 'Invalid QR payload.'; }
+            return;
+        }
+        if (this.importPayload(payload)) {
+            this.stopQrScan();
+            this.closeQrImportModal();
+            this.closeQrModal();
+            Toast.show('List imported successfully.');
+        } else if (status) {
+            status.className = 'qr-import-status err';
+            status.textContent = 'This payload is not a valid Pantry list.';
+        }
+    },
+
+    importPayload(payload) {
+        if (!payload || payload.app !== 'pantry' || !payload.list || !Array.isArray(payload.items)) return false;
+        const db = Store.getDB();
+        const listId = 'shared_' + Date.now();
+        const listName = String(payload.list.name || 'Shared List').slice(0, 60);
+        db.lists.push({ id: listId, name: listName, createdAt: new Date().toISOString(), archived: false });
+        const now = new Date().toISOString();
+        payload.items.forEach((it, idx) => {
+            if (!it || it.name == null) return;
+            db.items.push({
+                id: listId + '_' + idx,
+                listId,
+                name: String(it.name).slice(0, 200),
+                quantity: isFinite(Number(it.qty)) && Number(it.qty) > 0 ? Number(it.qty) : 1,
+                unit: String(it.unit != null ? it.unit : 'nos').slice(0, 20),
+                category: String(it.category != null ? it.category : 'General').slice(0, 50),
+                purchased: false,
+                createdAt: now
+            });
+        });
+        Store.saveDB(db);
+        Store.setActiveList(listId);
+        UI.render();
+        UI.updateDashboard();
+        UI.renderLists();
+        return true;
+    },
+
+    /* --- Camera QR scan --- */
+    startQrScan() {
+        const video = document.getElementById('qr-video');
+        const scanBtn = document.getElementById('qr-scan-btn');
+        const status = document.getElementById('qr-import-status');
+        if (!video) return;
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            if (status) { status.className = 'qr-import-status err'; status.textContent = 'Camera not supported on this device/browser. Use Paste instead.'; }
+            return;
+        }
+        scanBtn.disabled = true;
+        if (scanBtn) scanBtn.innerHTML = '<span class="flex-center gap-8"><i data-lucide="scan-line" width="18" height="18"></i> Scanning…</span>';
+
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            .then((stream) => {
+                this.qrStream = stream;
+                video.srcObject = stream;
+                video.style.display = 'block';
+                video.setAttribute('playsinline', 'true');
+                video.play();
+                if (status) { status.className = 'qr-import-status'; status.textContent = 'Point the camera at a QR code…'; }
+                this.refreshIcons();
+                this.scanFrame();
+            })
+            .catch((err) => {
+                if (scanBtn) { scanBtn.disabled = false; scanBtn.innerHTML = '<span class="flex-center gap-8"><i data-lucide="camera" width="18" height="18"></i> Start Camera</span>'; }
+                if (status) { status.className = 'qr-import-status err'; status.textContent = 'Camera permission denied. Use Paste instead.'; }
+                this.refreshIcons();
+            });
+    },
+
+    scanFrame() {
+        const video = document.getElementById('qr-video');
+        const canvas = document.getElementById('qr-canvas-hidden');
+        const status = document.getElementById('qr-import-status');
+        if (!video || !canvas || !this.qrStream) return;
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            try {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const code = (typeof jsQR === 'function') ? jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' }) : null;
+                if (code && code.data) {
+                    const payload = this.parsePayloadText(code.data);
+                    if (payload) {
+                        if (status) { status.className = 'qr-import-status ok'; status.textContent = 'QR detected — importing…'; }
+                        if (this.importPayload(payload)) {
+                            this.closeQrImportModal();
+                            this.closeQrModal();
+                        }
+                        return;
+                    }
+                }
+            } catch (e) { /* frame error; keep scanning */ }
+        }
+        if (this.qrStream) {
+            this._scanTimer = setTimeout(() => this.scanFrame(), 200);
+        }
+    },
+
+    stopQrScan() {
+        if (this._scanTimer) { clearTimeout(this._scanTimer); this._scanTimer = null; }
+        if (this.qrStream) {
+            this.qrStream.getTracks().forEach(t => t.stop());
+            this.qrStream = null;
+        }
+        const video = document.getElementById('qr-video');
+        const scanBtn = document.getElementById('qr-scan-btn');
+        if (video) { video.style.display = 'none'; video.srcObject = null; }
+        if (scanBtn) { scanBtn.disabled = false; scanBtn.innerHTML = '<span class="flex-center gap-8"><i data-lucide="camera" width="18" height="18"></i> Start Camera</span>'; }
     },
 
     /* --- Modals --- */
@@ -1049,6 +1288,9 @@ const UI = {
                     <div style="font-size:0.8rem; color:var(--text-secondary);">${count} items · ${pend} pending</div>
                 </div>
                 <div style="display:flex; gap:4px; flex-shrink:0;">
+                    <button class="btn-icon" title="Share via QR" onclick="UI.openQrModal('${list.id}')">
+                        <i data-lucide="qr-code" width="18" height="18"></i>
+                    </button>
                     <button class="btn-icon" title="Set active" onclick="Store.setActiveList('${list.id}')">
                         <i data-lucide="check" width="18" height="18"></i>
                     </button>
@@ -1113,6 +1355,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     UI.init();
     Confirm.init();
+    Toast.init();
 
     window.addEventListener('online', updateOnlineStatus);
     window.addEventListener('offline', updateOnlineStatus);
